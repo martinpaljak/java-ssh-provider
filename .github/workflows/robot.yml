@@ -1,0 +1,53 @@
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+      - next
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+name: Build robot
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    name: Build and deploy
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+      - name: Set SSH key
+        if: (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/next' || github.ref == 'refs/heads/main')
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+      - name: Add known host key
+        if: (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/next' || github.ref == 'refs/heads/main')
+        run: ssh-keyscan javacard.pro >> ~/.ssh/known_hosts
+      - name: Setup java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: zulu
+          cache: maven
+      - name: Compile and verify
+        run: ./mvnw -U -B -T1C verify
+      - name: Deploy
+        run: ./mvnw -B deploy
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: create_release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          files: |
+            target/sshprovider.jar
+          fail_on_unmatched_files: true
+          body: Release ${{ github.ref_name }}
+          prerelease: true # manually promoted
