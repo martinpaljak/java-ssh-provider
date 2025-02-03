@@ -1,6 +1,7 @@
 # SSHProvider.java
 The missing bridge between SSH and Java worlds:
 - access keys in any [compatible](https://datatracker.ietf.org/doc/html/draft-miller-ssh-agent) agent[<sup>*</sup>](#agents) (as set in `$SSH_AUTH_SOCK`) via Java [`KeyStore`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/security/KeyStore.html)
+- use agent keys for standard Java signatures
 - sign easily with local hardware keys on remote machines with SSH agent forwarding
 - work with [`SSHSIG`](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.sshsig) and raw SSH signature formats and [SSH certificates](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys) (including [webauthn signatures](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f), WIP)
 
@@ -37,8 +38,12 @@ sig.initSign(key);
 - Signature (SHA512withECDSA)
 - Signature (SHA256withRSA)
 - Signature (SHA512withRSA)
-- Signature (SSH)
-- Signature (SSHSIG)
+- Signature (ssh-ed25519)
+- Signature (ssh-ecdsa-nistp256)
+- Signature (ssh-ecdsa-nistp384)
+- Signature (ssh-ecdsa-nistp521)
+- Signature (rsa-sha2-256)
+- Signature (rsa-sha2-512)
 
 ## Installation
 
