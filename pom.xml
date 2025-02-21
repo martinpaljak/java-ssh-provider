@@ -14,9 +14,11 @@
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
+        <!-- Note: name will change -->
+        <yausa.version>25.01.23-SNAPSHOT</yausa.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
+    <!-- Pick up parent -->
     <repositories>
         <repository>
             <id>javacard-pro</id>
@@ -46,7 +48,7 @@
         <dependency>
             <groupId>com.github.martinpaljak</groupId>
             <artifactId>yausa-common</artifactId>
-            <version>${project.version}</version>
+            <version>${yausa.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -69,7 +71,7 @@
         <dependency>
             <groupId>com.github.martinpaljak</groupId>
             <artifactId>test-utils</artifactId>
-            <version>${project.version}</version>
+            <version>${yausa.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -120,6 +122,19 @@
                                 </filter>
                             </filters>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
