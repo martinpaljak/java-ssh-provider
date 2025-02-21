@@ -11,6 +11,7 @@
 
     <artifactId>sshprovider</artifactId>
     <name>SSH Provider</name>
+    <version>25.01.24-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
