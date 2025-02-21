@@ -18,7 +18,7 @@ Pure Java with _zero_ 3rd party dependencies!
 > Sign easily with local hardware keys on remote machines with SSH agent forwarding ❤️
 
 ## How to use
-There is also a longer [[Tutorial]] (WIP)
+There is also a longer [Tutorial](https://github.com/martinpaljak/java-ssh-provider/wiki/Tutorial) (WIP)
 ## Access keys in agent
 
 Generate standard signatures with a key in hardware via `$SSH_AUTH_SOCK`
