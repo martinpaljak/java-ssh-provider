@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.martinpaljak</groupId>
         <artifactId>yausa</artifactId>
-        <version>25.01.23-SNAPSHOT</version>
+        <version>25.02.21-SNAPSHOT</version>
     </parent>
 
     <artifactId>sshprovider</artifactId>
@@ -16,7 +16,7 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <!-- Note: name will change -->
-        <yausa.version>25.01.23-SNAPSHOT</yausa.version>
+        <yausa.version>25.02.21-SNAPSHOT</yausa.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputTimestamp>2025-02-21T13:16:02Z</project.build.outputTimestamp>
     </properties>
