@@ -228,7 +228,7 @@ public class TestProviderSSHSIG {
                 sshsig.setParameter(new SSHSIGVerificationParameters(namespace));
                 sshsig.initVerify(pubkey.getKey());
                 sshsig.update(payload);
-                Assert.assertTrue(sshsig.verify(sigbytes));
+                Assert.assertTrue(sshsig.verify(sigbytes), "%s: %s".formatted(sigfile, pubkey));
             }
         }
     }

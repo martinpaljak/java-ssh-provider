@@ -156,6 +156,8 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
         if (state != State.VERIFY) {
             throw new SignatureException("Not initialized");
         }
+
+        log.info("SSHSignatureSpi: engineVerify %s with %s".formatted(publicKey.getSSHType(), publicKey.asString()));
         var hash = digest.digest();
         digest.reset();
 

@@ -56,7 +56,7 @@ public final class SSHSignatureSpi extends SignatureSpi {
         }
         try {
             // Turn a plain public key into a SSHPublicKey, taking into account FIDO parameters
-            sshpub = state == State.PARAMETRIZED ? SSHPublicKey.fromJavaWithFido(publicKey, fidoparams.appdata()) : SSHPublicKey.fromJavaKey(publicKey);
+            sshpub = state == State.PARAMETRIZED ? SSHPublicKey.fromJavaKey(publicKey).toFIDO(fidoparams.appdata()) : SSHPublicKey.fromJavaKey(publicKey);
             bos = new ByteArrayOutputStream();
             state = State.VERIFY;
         } catch (IllegalArgumentException e) {
@@ -90,8 +90,7 @@ public final class SSHSignatureSpi extends SignatureSpi {
     @Override
     protected void engineUpdate(byte b) throws SignatureException {
         switch (this.state) {
-            case SIGN_AGENT_NATIVE, SIGN_AGENT_SSH, VERIFY -> bos.write(b);
-            case SIGN_SSH -> signature.update(b);
+            case SIGN_AGENT_NATIVE, SIGN_AGENT_SSH, VERIFY, SIGN_SSH -> bos.write(b);
             default -> throw new SignatureException("Signature object not properly initialized: " + this.state);
         }
     }
@@ -100,13 +99,13 @@ public final class SSHSignatureSpi extends SignatureSpi {
     protected void engineUpdate(byte[] b, int off, int len) throws SignatureException {
         Objects.requireNonNull(b, "bytes can not be null");
         switch (this.state) {
-            case SIGN_AGENT_NATIVE, SIGN_AGENT_SSH, VERIFY -> bos.write(b, off, len);
-            case SIGN_SSH -> signature.update(b, off, len);
+            case SIGN_AGENT_NATIVE, SIGN_AGENT_SSH, VERIFY, SIGN_SSH -> bos.write(b, off, len);
             default -> throw new SignatureException("Signature object not properly initialized: " + this.state);
         }
     }
 
     private SSHSignature agent_sign(byte[] dtbs, SSHAgentPrivateKey keyref) throws SignatureException {
+        log.info("SSHSignatureSpi: agent_sign %s with %s".formatted(keyref, algorithm));
         try {
             int flags = switch (algorithm) {
                 case "rsa-sha2-256", "SHA256withRSA" -> SignRequest.SSH_AGENT_RSA_SHA2_256;
@@ -133,11 +132,12 @@ public final class SSHSignatureSpi extends SignatureSpi {
             return switch (this.state) {
                 case SIGN_AGENT_NATIVE -> agent_sign(bos.toByteArray(), keyref).payload().toNative();
                 case SIGN_AGENT_SSH -> agent_sign(bos.toByteArray(), keyref).toBytes();
-                case SIGN_SSH -> SSHSignature.java2ssh(signature.sign(), algorithm);
+                case SIGN_SSH -> {
+                    signature.update(bos.toByteArray());
+                    yield SSHSignature.java2ssh(signature.sign(), algorithm);
+                }
                 default -> throw new SignatureException("Signature object not in right state: " + this.state);
             };
-        } catch (IOException e) {
-            throw new SignatureException("Could not sign: " + e.getMessage(), e);
         } finally {
             reset();
         }
@@ -149,6 +149,7 @@ public final class SSHSignatureSpi extends SignatureSpi {
         if (this.state != State.VERIFY) {
             throw new SignatureException("Signature object not properly initialized: " + this.state);
         }
+        log.info("SSHSignatureSpi: engineVerify %s with %s".formatted(algorithm, sshpub.asString()));
         try {
             var sig = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sigBytes));
             return sig.verify(bos.toByteArray(), sshpub);
