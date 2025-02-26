@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Objects;
 
+@SuppressWarnings("ArrayRecordComponent")
 public record FIDOSignatureParameters(byte[] appdata, int counter, byte flags) implements AlgorithmParameterSpec {
 
     public FIDOSignatureParameters {

@@ -98,6 +98,7 @@ public final class SSHKeyStoreSpi extends KeyStoreSpi {
         return resolveAlias(alias);
     }
 
+    @SuppressWarnings("JavaUtilDate")
     @Override
     public Date engineGetCreationDate(String alias) {
         var e = resolveAlias(alias);
@@ -219,7 +220,7 @@ public final class SSHKeyStoreSpi extends KeyStoreSpi {
         throw new UnsupportedOperationException("SSH agent keystore is read-only, in-memory");
     }
 
-    private Collection<SSHIdentityWithComment<? extends SSHIdentity>> fetchIdentities() {
+    private Set<SSHIdentityWithComment<? extends SSHIdentity>> fetchIdentities() {
 
         try {
             var reply = runCommand(socket, new RequestIdentities());
@@ -232,10 +233,10 @@ public final class SSHKeyStoreSpi extends KeyStoreSpi {
             } else {
                 log.warning("Could not list identities: " + AgentMessage.name(type));
             }
-            return found;
+            return Collections.unmodifiableSet(found);
         } catch (IOException e) {
             log.warning("Could not list identities: " + e.getMessage());
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
     }
 

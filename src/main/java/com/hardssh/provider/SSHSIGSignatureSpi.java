@@ -9,6 +9,7 @@ import pro.javacard.ssh.openssh.SSHSIG;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -117,7 +118,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
         digest.reset();
 
         // The hash name in ssh lingo (tolower and remove -)
-        var hash_algo = digest.getAlgorithm().toLowerCase().replace("-", "");
+        var hash_algo = digest.getAlgorithm().toLowerCase(Locale.ENGLISH).replace("-", "");
 
         try {
             // The key type is the signature type as well, unless it is RSA, when it depends on used hash.
@@ -161,7 +162,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
         var hash = digest.digest();
         digest.reset();
 
-        var hash_algo = digest.getAlgorithm().toLowerCase().replace("-", "");
+        var hash_algo = digest.getAlgorithm().toLowerCase(Locale.ENGLISH).replace("-", "");
 
         try {
             var sshsig = SSHSIG.PARSER.fromBytes(sigBytes);
@@ -176,7 +177,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
                 }
             } else {
                 // verify that the hash in sshsig matches the hash we use
-                var paramhash = params.hash().toLowerCase().replace("-", "");
+                var paramhash = params.hash().toLowerCase(Locale.ENGLISH).replace("-", "");
                 if (!paramhash.equals(sshsig.hash_algorithm())) {
                     throw new SignatureException("SSHSIG hash mismatch: " + sshsig.hash_algorithm() + " != " + paramhash);
                 }
