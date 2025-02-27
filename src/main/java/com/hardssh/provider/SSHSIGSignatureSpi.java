@@ -18,6 +18,8 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
 
     static final String DEFAULT_HASH = "SHA-512";
 
+    final SSHProvider sshprovider = new SSHProvider();
+
     static final Map<String, String> javahash2ssh = Map.of(
             "SHA-256", SSHSIG.SHA256,
             "SHA-512", SSHSIG.SHA512
@@ -136,7 +138,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
             var dtbs = SSHSIG.dtbs(sigspec.namespace(), hash_algo, hash);
 
             // We trigger our sibling SSHSignatureSpi here.
-            Signature sig = Signature.getInstance(sigtype);
+            Signature sig = Signature.getInstance(sigtype, sshprovider);
             // TODO: FIDO parameters for native keys ?
             sig.initSign(privateKey);
             sig.update(dtbs);
