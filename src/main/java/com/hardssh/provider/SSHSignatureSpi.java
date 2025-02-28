@@ -118,7 +118,7 @@ public final class SSHSignatureSpi extends SignatureSpi {
                 var p = SignResponse.fromByteBuffer(r);
                 return p.getSignature();
             } else {
-                throw new SignatureException("Could not sign: " + code);
+                throw new SignatureException("Could not sign: " + AgentMessage.name(code));
             }
         } catch (IOException e) {
             throw new SignatureException("Can not transmit sign request: " + e.getMessage(), e);

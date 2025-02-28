@@ -323,7 +323,7 @@ public final class SSHKeyStoreSpi extends KeyStoreSpi {
                 // Alias name: ...
                 // Creation date: null
                 // Unknown Entry Type
-                var e = new SSHProvider.KeyPairEntry(identity.getKey().getJavaKey(), priv);
+                var e = new SSHProvider.KeyPairEntry(identity.getKey(), priv);
                 entries.put(identity.getFingerprint(), e);
             } else {
                 throw new CertificateException("Unknown signer type: %s".formatted(identity));
