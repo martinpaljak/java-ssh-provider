@@ -4,8 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.testng.Assert;
+import org.testng.SkipException;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+import org.testng.util.Strings;
 import pro.javacard.ssh.SSHPublicKey;
 import pro.javacard.ssh.SSHSignature;
 
@@ -28,9 +31,15 @@ public class TestProviderKeyStore {
         return System.getenv("YAUSA_TEST") != null;
     }
 
+    @BeforeClass
+    public void checkAgent() {
+        if (Strings.isNullOrEmpty(System.getenv("SSH_AUTH_SOCK"))) {
+            throw new SkipException("No $SSH_AUTH_SOCK");
+        }
+    }
+
     @Test
     public void testKeyStore() throws Exception {
-
         var p = new SSHProvider();
         Assert.assertEquals(p.getName(), "SSHProvider");
         Assert.assertEquals(p.getVersionStr(), "1.0");
