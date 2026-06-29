@@ -23,10 +23,10 @@ public sealed interface DTBSPayload<T> extends SSHSerializable<T> permits Certif
                 GenericPayload.PARSER
         );
 
-        int position = buffer.position();
+        var position = buffer.position();
         for (var parser : parsers) {
             try {
-                DTBSPayload<?> payload = parser.fromByteBuffer(buffer);
+                var payload = parser.fromByteBuffer(buffer);
                 if (payload != null) {
                     return payload;
                 }

@@ -18,34 +18,41 @@ public final class Visalizer {
     }
 
     public static void runit(byte[] agrs) {
-        for (var b : agrs)
+        for (var b : agrs) {
             applyPair((byte) (b & 0xFF));
+        }
         printBoard(System.out);
     }
 
     private static void applyPair(int n) {
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++) {
             move(MOVES[n >> (2 * i) & 0b11]);
+        }
     }
 
     private static void move(int[] movement) {
-        if (ey + movement[0] >= 0 && ey + movement[0] < H)
+        if (ey + movement[0] >= 0 && ey + movement[0] < H) {
             ey += movement[0];
-        if (ex + movement[1] >= 0 && ex + movement[1] < W)
+        }
+        if (ex + movement[1] >= 0 && ex + movement[1] < W) {
             ex += movement[1];
+        }
         B[ey][ex]++;
     }
 
     private static void printBoard(PrintStream ps) {
         ps.println("+---[CODINGAME]---+");
-        for (var i = 0; i < H && ps.printf("%c", '|') != null; ps.println('|'), i++)
-            for (var j = 0; j < W; j++)
-                if (sy == i && sx == j)
+        for (var i = 0; i < H && ps.printf("%c", '|') != null; ps.println('|'), i++) {
+            for (var j = 0; j < W; j++) {
+                if (sy == i && sx == j) {
                     ps.print('S');
-                else if (ey == i && ex == j)
+                } else if (ey == i && ex == j) {
                     ps.print('E');
-                else
+                } else {
                     ps.print(SYMBOLS[B[i][j] % SYMBOLS.length]);
+                }
+            }
+        }
         ps.println("+-----------------+");
     }
 }

@@ -20,7 +20,7 @@ public record SSHSIGPayload(byte[] dtbs, String namespace, byte[] reserved, Stri
 
     // Described in https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.sshsig#L79
     public static SSHSIGPayload fromByteBuffer(ByteBuffer buffer) {
-        int start = buffer.position();
+        var start = buffer.position();
         var magic = new byte[SSHSIG.MAGIC_LEN];
         buffer.get(magic);
         if (!Arrays.equals(SSHSIG.MAGIC(), magic)) {

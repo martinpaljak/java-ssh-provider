@@ -258,7 +258,7 @@ public final class SSHKeyStoreSpi extends KeyStoreSpi {
         // unlock if password given.
         if (password != null && password.length > 0) {
             log.fine("Unlocking SSH agent ...");
-            String pass = new String(password);
+            var pass = new String(password);
             var r = runCommand(socket, new LockUnlock(pass, false));
             var code = AgentMessage.identify(r);
             if (code != AgentMessage.SSH_AGENT_SUCCESS) {

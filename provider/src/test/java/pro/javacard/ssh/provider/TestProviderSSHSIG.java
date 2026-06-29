@@ -164,7 +164,7 @@ public class TestProviderSSHSIG {
 
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
-        KeyPair kp = kpg.generateKeyPair();
+        var kp = kpg.generateKeyPair();
         testKeypairSSHSIG(kp, payload);
 
         kpg = KeyPairGenerator.getInstance("EC");
@@ -191,7 +191,7 @@ public class TestProviderSSHSIG {
         sshsig.setParameter(new SSHSIGSigningParameters(kp.getPublic(), "file"));
         sshsig.initSign(kp.getPrivate());
         sshsig.update(payload);
-        byte[] signature = sshsig.sign();
+        var signature = sshsig.sign();
 
         log.info("Verifying signature...");
         sshsig.setParameter(new SSHSIGVerificationParameters("file"));
@@ -219,11 +219,12 @@ public class TestProviderSSHSIG {
         try (var stream = Files.newDirectoryStream(dir, "*.sig")) {
             for (var sigfile : stream) {
                 log.info("Test signature: {}", sigfile);
-                if (sigfile.toString().endsWith("dsa.sig"))
+                if (sigfile.toString().endsWith("dsa.sig")) {
                     continue;
+                }
                 var pub = Path.of(sigfile.toString().replaceFirst("\\.\\w+$", ".pub"));
                 var sigbytes = SSHSIG.fromArmored(sigfile);
-                SSHSIG signature = SSHSIG.PARSER.fromBytes(sigbytes);
+                var signature = SSHSIG.PARSER.fromBytes(sigbytes);
                 SSHIdentity pubkey = SSHIdentity.from(pub);
 
                 var sshsig = Signature.getInstance("SSHSIG");

@@ -87,7 +87,7 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
         if (!Arrays.equals(MAGIC(), mgc)) {
             throw new IllegalArgumentException("Invalid SSHSIG magic: " + Helpers.toHex(mgc));
         }
-        int version = buffer.getInt();
+        var version = buffer.getInt();
         if (version != VERSION) {
             throw new IllegalArgumentException("Unsupported SSHSIG version: " + version);
         }
@@ -106,7 +106,7 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
             throw new IllegalArgumentException("Unsupported hash algorithm: " + hash_algorithm);
         }
         byte[] sigbytes = SSHWireFormat.get_bytes(buffer);
-        SSHSignature signature = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sigbytes));
+        var signature = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sigbytes));
         return new SSHSIG(version, identity, namespace, reserved, hash_algorithm, signature);
     }
 

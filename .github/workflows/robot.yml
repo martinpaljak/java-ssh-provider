@@ -30,7 +30,7 @@ jobs:
           distribution: zulu
           cache: maven
       - name: Compile and verify
-        run: ./mvnw -U -B -T1C verify
+        run: ./mvnw -B verify
       - name: Deploy
         if: (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/next' || github.ref == 'refs/heads/main')
         uses: martinpaljak/maven-ssh-deploy@v1

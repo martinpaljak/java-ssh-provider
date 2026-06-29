@@ -151,7 +151,7 @@ public final class Helpers {
         if (buffer.get() != 0x30) {
             throw new IllegalArgumentException("Expected SEQUENCE tag");
         }
-        int len = get_der_len(buffer);
+        var len = get_der_len(buffer);
         if (len != buffer.remaining()) {
             throw new IllegalArgumentException("Length mismatch");
         }
@@ -161,7 +161,7 @@ public final class Helpers {
     }
 
     private static int get_der_len(ByteBuffer buffer) {
-        int b1 = buffer.get() & 0xFF;
+        var b1 = buffer.get() & 0xFF;
 
         // Short form
         if ((b1 & 0x80) == 0) {
@@ -179,7 +179,7 @@ public final class Helpers {
         if (buffer.get() != 0x02) {
             throw new IllegalArgumentException("Expected INTEGER tag");
         }
-        int length = get_der_len(buffer);
+        var length = get_der_len(buffer);
         byte[] value = new byte[length];
         buffer.get(value);
 
@@ -191,7 +191,7 @@ public final class Helpers {
     }
 
     private static byte[] with_der_len(byte[] data) {
-        int length = data.length;
+        var length = data.length;
         if (length < 128) {
             return concatenate(new byte[]{(byte) length}, data);
         } else if (length <= 255) {
@@ -202,8 +202,8 @@ public final class Helpers {
     }
 
     public static byte[] rs2der(byte[] r, byte[] s) {
-        BigInteger br = new BigInteger(1, r);
-        BigInteger bs = new BigInteger(1, s);
+        var br = new BigInteger(1, r);
+        var bs = new BigInteger(1, s);
 
         byte[] dr = with_der_len(br.toByteArray());
         byte[] ds = with_der_len(bs.toByteArray());

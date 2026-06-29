@@ -14,7 +14,7 @@ import java.util.Set;
 
 public final class IdentitiesAnswer extends AgentMessage<IdentitiesAnswer> {
 
-    private final static int MAX_IDENTITIES = 100;
+    private static final int MAX_IDENTITIES = 100;
     private final Set<SSHIdentityWithComment<?>> identities;
 
     public IdentitiesAnswer(Collection<? extends SSHIdentity> identities) {

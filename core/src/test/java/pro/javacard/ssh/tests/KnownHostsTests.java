@@ -17,7 +17,7 @@ public class KnownHostsTests {
 
     @Test
     public void testKnownHosts() throws Exception {
-        String sample = new String(getClass().getResourceAsStream("known_hosts1.txt").readAllBytes());
+        var sample = new String(getClass().getResourceAsStream("known_hosts1.txt").readAllBytes());
         var r = SSHKnownHosts.parse(sample);
         //Assert.assertEquals(r.size(), 10);
         Assert.assertEquals(r.getConfig().size(), 26);
@@ -34,7 +34,7 @@ public class KnownHostsTests {
 
     @Test
     public void testOpenSSHKnownHosts() throws Exception {
-        String sample = new String(getClass().getResourceAsStream("openssh_known_hosts.txt").readAllBytes());
+        var sample = new String(getClass().getResourceAsStream("openssh_known_hosts.txt").readAllBytes());
         var r = SSHKnownHosts.parse(sample);
         var result = r.toString();
         //Assert.assertEquals(r.getKnownHosts().size(), 35);
@@ -59,13 +59,14 @@ public class KnownHostsTests {
 
     @Test
     public void testWindowsNamedPipe() throws Exception {
-        if (!System.getProperty("os.name").toLowerCase().contains("win"))
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
             return;
+        }
         var name = "\\\\.\\pipe\\openssh-ssh-agent";
         Path p = Paths.get(name);
         System.out.println(Files.exists(p));
         System.out.println(Files.isRegularFile(p));
-        RandomAccessFile pipe = new RandomAccessFile("\\\\.\\pipe\\openssh-ssh-agent", "rw");
+        var pipe = new RandomAccessFile("\\\\.\\pipe\\openssh-ssh-agent", "rw");
         System.out.println(pipe);
         pipe.write(Helpers.fromHex("000000010b"));
         var all = new byte[9];

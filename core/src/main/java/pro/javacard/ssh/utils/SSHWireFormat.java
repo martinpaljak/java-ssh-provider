@@ -97,8 +97,9 @@ public final class SSHWireFormat {
             throw new IllegalArgumentException("String too long: " + bytes.length);
         }
         for (var b : bytes) {
-            if (b < 32 || b > 126)
+            if (b < 32 || b > 126) {
                 throw new IllegalArgumentException("Invalid character in string: " + Integer.toHexString(b));
+            }
         }
         return new String(bytes, StandardCharsets.US_ASCII);
     }

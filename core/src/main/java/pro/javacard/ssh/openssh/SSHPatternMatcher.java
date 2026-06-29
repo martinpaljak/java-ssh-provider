@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 // https://man.openbsd.org/sshd.8#from=_pattern-list_
 public final class SSHPatternMatcher {
 
-    private final static Logger log = Logger.getLogger(SSHPatternMatcher.class.getName());
+    private static final Logger log = Logger.getLogger(SSHPatternMatcher.class.getName());
 
     private SSHPatternMatcher() {
     }
 
-    final static Pattern CIDR_PATTERN = Pattern.compile("^(?:\\d+\\.\\d+\\.\\d+\\.\\d+|[0-9a-fA-F:]+)/\\d+$");
+    static final Pattern CIDR_PATTERN = Pattern.compile("^(?:\\d+\\.\\d+\\.\\d+\\.\\d+|[0-9a-fA-F:]+)/\\d+$");
 
     public static boolean possiblyCIDR(String cidr) {
         return CIDR_PATTERN.matcher(cidr).matches();
@@ -29,14 +29,14 @@ public final class SSHPatternMatcher {
     @SuppressWarnings("StringSplitter")
     public static boolean matchesRange(String input, String netblock) {
         try {
-            String[] parts = netblock.split("/");
+            var parts = netblock.split("/");
             if (parts.length != 2) {
                 throw new IllegalArgumentException("Invalid CIDR format: " + netblock);
             }
 
             // Parse the network address and mask length
-            byte[] network = InetAddress.getByName(parts[0]).getAddress();
-            int maskBits = Integer.parseInt(parts[1]);
+            var network = InetAddress.getByName(parts[0]).getAddress();
+            var maskBits = Integer.parseInt(parts[1]);
 
             // Validate maskBits
             if (maskBits < 0 || maskBits > (network.length * 8)) {
@@ -44,7 +44,7 @@ public final class SSHPatternMatcher {
             }
 
             // Parse the input IP
-            byte[] ip = InetAddress.getByName(input).getAddress();
+            var ip = InetAddress.getByName(input).getAddress();
 
             // Ensure same IP version
             if (network.length != ip.length) {
@@ -52,11 +52,11 @@ public final class SSHPatternMatcher {
             }
 
             // Compare the network bits
-            int maskFullBytes = maskBits / 8;
-            int remainingBits = maskBits % 8;
+            var maskFullBytes = maskBits / 8;
+            var remainingBits = maskBits % 8;
 
             // Check full bytes
-            for (int i = 0; i < maskFullBytes; i++) {
+            for (var i = 0; i < maskFullBytes; i++) {
                 if (network[i] != ip[i]) {
                     return false;
                 }
@@ -64,7 +64,7 @@ public final class SSHPatternMatcher {
 
             // Check remaining bits if any
             if (remainingBits > 0) {
-                int mask = -1 << (8 - remainingBits);
+                var mask = -1 << (8 - remainingBits);
                 return (network[maskFullBytes] & mask) == (ip[maskFullBytes] & mask);
             }
 
@@ -93,7 +93,7 @@ public final class SSHPatternMatcher {
 
         @Override
         public String toString() {
-            return String.format("PatternEntry[%s%s]", isNegated ? "not " : "", pattern);
+            return "PatternEntry[%s%s]".formatted(isNegated ? "not " : "", pattern);
         }
     }
 

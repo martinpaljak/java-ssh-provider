@@ -39,11 +39,11 @@ public final class SSHProvider extends Provider {
 
         @Override
         public Object newInstance(Object ctrParamObj) throws NoSuchAlgorithmException {
-            String type = getType();
-            String algo = getAlgorithm();
+            var type = getType();
+            var algo = getAlgorithm();
             try {
-                if (type.equals("Signature")) {
-                    if (algo.equals("SSHSIG")) {
+                if ("Signature".equals(type)) {
+                    if ("SSHSIG".equals(algo)) {
                         return new SSHSIGSignatureSpi();
                     }
                     return new SSHSignatureSpi(algo);

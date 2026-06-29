@@ -17,7 +17,7 @@ public record UserAuthPayload(byte[] dtbs, String username, String connection, S
     public static final String HOSTBOUND = "publickey-hostbound-v00@openssh.com";
 
     public static UserAuthPayload fromByteBuffer(ByteBuffer buffer) {
-        int start = buffer.position();
+        var start = buffer.position();
         // Described in https://github.com/openssh/openssh-portable/blob/master/PROTOCOL#L434
         // and https://datatracker.ietf.org/doc/html/rfc4252#page-9
         SSHWireFormat.get_bytes(buffer); // Skip session

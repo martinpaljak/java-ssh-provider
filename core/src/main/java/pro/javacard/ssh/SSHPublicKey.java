@@ -31,17 +31,17 @@ import java.util.logging.Logger;
 @SuppressWarnings("ArrayRecordComponent")
 public final class SSHPublicKey implements PublicKey, SSHIdentity, SSHSerializable<SSHPublicKey> {
     @Serial
-    private final static long serialVersionUID = 2463666226688795498L;
+    private static final long serialVersionUID = 2463666226688795498L;
 
     private static final Logger log = Logger.getLogger(SSHPublicKey.class.getName());
 
     private final String type;
-    private transient final PublicKeyContainer<?> container;
+    private final transient PublicKeyContainer<?> container;
     private final byte[] objectHash;
 
     // Parses a given public key type
     public static SSHPublicKey parse(KeyConf type, ByteBuffer src) {
-        PublicKeyContainer<?> r = type.parser.fromByteBuffer(src);
+        var r = type.parser.fromByteBuffer(src);
         log.fine("Public key: " + r);
         return new SSHPublicKey(type.sshType, r);
     }
@@ -80,7 +80,7 @@ public final class SSHPublicKey implements PublicKey, SSHIdentity, SSHSerializab
     }
 
     private static ECPublicKey ecdsa_bytes2pubkey(byte[] pubkey, KeyConf conf) {
-        final int len = conf.curvelen;
+        final var len = conf.curvelen;
         try {
             if (pubkey[0] != 0x04) {
                 throw new IllegalArgumentException("Invalid EC public key format");
@@ -113,7 +113,7 @@ public final class SSHPublicKey implements PublicKey, SSHIdentity, SSHSerializab
         public byte[] toBytes() {
             try (var bin = SSHWireFormat.create()) {
                 bin.ssh_string(curve.sshCurve);
-                int len = curve.curvelen;
+                var len = curve.curvelen;
                 var x = Helpers.positive(pub.getW().getAffineX().toByteArray());
                 var y = Helpers.positive(pub.getW().getAffineY().toByteArray());
                 var blob = Helpers.concatenate(new byte[]{0x04}, Helpers.leftpad(x, len), Helpers.leftpad(y, len));
@@ -265,7 +265,7 @@ public final class SSHPublicKey implements PublicKey, SSHIdentity, SSHSerializab
     // Return the curve name of the given public key or null if not a known curve
     public static KeyConf detect_curve(ECKey publicKey) {
         // Get the key's parameter spec
-        ECParameterSpec keySpec = publicKey.getParams();
+        var keySpec = publicKey.getParams();
         // Try each NIST curve
         for (var conf : Set.of(KeyConf.SECP256R1, KeyConf.SECP384R1, KeyConf.SECP521R1)) {
             var curveSpec = Helpers.getCurveParams(conf.javaCurve);
@@ -299,7 +299,7 @@ public final class SSHPublicKey implements PublicKey, SSHIdentity, SSHSerializab
         try {
             var k = PARSER.fromByteBuffer(ByteBuffer.wrap(buffer));
             if (!k.getSSHType().equals(type)) {
-                throw new IllegalArgumentException(String.format("mismatching key type: %s vs %s", type, k.getSSHType()));
+                throw new IllegalArgumentException("mismatching key type: %s vs %s".formatted(type, k.getSSHType()));
             }
             return k;
         } catch (BufferUnderflowException e) {

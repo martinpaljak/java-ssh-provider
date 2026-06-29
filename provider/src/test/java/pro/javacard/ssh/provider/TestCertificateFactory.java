@@ -21,7 +21,7 @@ public class TestCertificateFactory {
 
         var i = SSHIdentity.from(getClass().getResourceAsStream("/k/ed25519_ca_ed25519-cert.pub"));
         var b = i.toBytes();
-        Certificate cert = factory.generateCertificate(new ByteArrayInputStream(b));
+        var cert = factory.generateCertificate(new ByteArrayInputStream(b));
         Assert.assertEquals(i, cert);
 
         var il = factory.generateCertificates(new ByteArrayInputStream(b));

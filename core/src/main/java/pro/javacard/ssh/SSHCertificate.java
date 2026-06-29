@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 // NOTE: it extends Certificate mostly for purity, not for actual use (most software will barf on non-X509 certificates)
 public final class SSHCertificate extends Certificate implements SSHIdentity, PublicKey, SSHSerializable<SSHCertificate> {
     @Serial
-    private final static long serialVersionUID = 3413623631804034714L;
+    private static final long serialVersionUID = 3413623631804034714L;
 
     private static final Logger log = Logger.getLogger(SSHCertificate.class.getName());
 
@@ -30,10 +30,10 @@ public final class SSHCertificate extends Certificate implements SSHIdentity, Pu
     private final int dtbs_len; // Data to be signed length, relative to cert beginning
     private final byte[] objectHash;
 
-    private transient final CertificatePayload payload;
+    private final transient CertificatePayload payload;
 
     // All above payload is covered by this signature
-    private transient final SSHSignature sig;
+    private final transient SSHSignature sig;
 
     public static final Parser<SSHCertificate> PARSER = SSHCertificate::fromByteBuffer;
 
@@ -166,7 +166,7 @@ public final class SSHCertificate extends Certificate implements SSHIdentity, Pu
     // From Object
     @Override
     public String toString() {
-        return String.format("SSHCertificate[%s for %s with %s by %s]", payload.type(), payload.id(), payload.publicKey().getFingerprint(), getSignatureKey().getFingerprint());
+        return "SSHCertificate[%s for %s with %s by %s]".formatted(payload.type(), payload.id(), payload.publicKey().getFingerprint(), getSignatureKey().getFingerprint());
     }
 
     @Override

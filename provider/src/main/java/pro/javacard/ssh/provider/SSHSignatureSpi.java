@@ -109,7 +109,7 @@ public final class SSHSignatureSpi extends SignatureSpi {
     private SSHSignature agent_sign(byte[] dtbs, SSHAgentPrivateKey keyref) throws SignatureException {
         log.info("SSHSignatureSpi: agent_sign %s with %s".formatted(keyref, algorithm));
         try {
-            int flags = switch (algorithm) {
+            var flags = switch (algorithm) {
                 case "rsa-sha2-256", "SHA256withRSA" -> SignRequest.SSH_AGENT_RSA_SHA2_256;
                 case "rsa-sha2-512", "SHA512withRSA" -> SignRequest.SSH_AGENT_RSA_SHA2_512;
                 default -> 0;

@@ -49,7 +49,7 @@ public abstract class AgentMessage<T> implements SSHSerializable<T> {
     public static final Map<Byte, String> realNames;
 
     static {
-        Map<Byte, String> messageNames = new HashMap<>();
+        var messageNames = new HashMap<Byte, String>();
 
         messageNames.put(SSH_AGENTC_REQUEST_RSA_IDENTITIES, "SSH_AGENTC_REQUEST_RSA_IDENTITIES");
         messageNames.put(SSH_AGENT_RSA_IDENTITIES_ANSWER, "SSH_AGENT_RSA_IDENTITIES_ANSWER");
@@ -108,7 +108,7 @@ public abstract class AgentMessage<T> implements SSHSerializable<T> {
     }
 
     public static ByteBuffer construct(AgentMessage<?> msg) {
-        byte[] payload = msg.toBytes();
+        var payload = msg.toBytes();
         var buffer = ByteBuffer.allocate(payload.length + 5);
         buffer.putInt(payload.length + 1);
         buffer.put(msg.code);

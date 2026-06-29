@@ -23,7 +23,7 @@ public class TestKeyFactory {
         Security.addProvider(new SSHProvider());
         KeyFactory factory = KeyFactory.getInstance("SSH");
         var spec = OpenSSHPublicKeySpec.fromStream(getClass().getResourceAsStream("/k/ed25519.pub"));
-        PublicKey pub = factory.generatePublic(spec);
+        var pub = factory.generatePublic(spec);
         Assert.assertEquals(pub.getAlgorithm(), "EdDSA");
         Assert.assertEquals(pub.getFormat(), "SSH");
     }

@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 @SuppressWarnings("ArrayRecordComponent")
 public record SSHSignature(String type, SSHSignaturePayload<?> payload) implements SSHSerializable<SSHSignature> {
 
-    private final static Logger log = Logger.getLogger(SSHSignature.class.getName());
+    private static final Logger log = Logger.getLogger(SSHSignature.class.getName());
 
     @SuppressWarnings("ImmutableEnumChecker")
     public enum SigConf {
@@ -155,7 +155,7 @@ public record SSHSignature(String type, SSHSignaturePayload<?> payload) implemen
             return new Parser<>() {
                 @Override
                 public FIDOPayload<S> fromByteBuffer(ByteBuffer src) {
-                    S signature = signatureParser.fromByteBuffer(src);
+                    var signature = signatureParser.fromByteBuffer(src);
                     if (!isValidSignature(signature)) {
                         throw new IllegalArgumentException("Invalid signature type for FIDO");
                     }
@@ -203,7 +203,7 @@ public record SSHSignature(String type, SSHSignaturePayload<?> payload) implemen
 
         public static <S extends SSHSignaturePayload<S>> Parser<WebAuthnPayload<S>> parser(Parser<S> signatureParser) {
             return src -> {
-                S signature = signatureParser.fromByteBuffer(src);
+                var signature = signatureParser.fromByteBuffer(src);
                 if (!(signature instanceof ECDSAPayload)) {
                     throw new IllegalArgumentException("Invalid signature type for WebAuthn: " + signature);
                 }
@@ -261,15 +261,15 @@ public record SSHSignature(String type, SSHSignaturePayload<?> payload) implemen
     }
 
     public static byte[] dtbs_webauthn(byte[] message, String origin, byte flags, long counter) {
-        byte[] appdata = Objects.requireNonNull(URI.create(origin).getHost(), "Could not parse origin for host").getBytes(StandardCharsets.UTF_8);
-        byte[] clientdata = webauthn_clientdata(message, origin).getBytes(StandardCharsets.UTF_8);
+        var appdata = Objects.requireNonNull(URI.create(origin).getHost(), "Could not parse origin for host").getBytes(StandardCharsets.UTF_8);
+        var clientdata = webauthn_clientdata(message, origin).getBytes(StandardCharsets.UTF_8);
         return dtbs_fido(clientdata, appdata, flags, counter);
     }
 
     // Generates webauthn clientdata _prefix_ usable for checking the client data
     private static String webauthn_clientdata_(byte[] message, String origin) {
-        String prefix = "{\"type\":\"webauthn.get\",\"challenge\":\"";
-        String suffix = "\",\"origin\":\"";
+        var prefix = "{\"type\":\"webauthn.get\",\"challenge\":\"";
+        var suffix = "\",\"origin\":\"";
         // NOTE: no closing bracket
         return prefix + Helpers.base64url(message) + suffix + origin + "\"";
     }
@@ -331,7 +331,7 @@ public record SSHSignature(String type, SSHSignaturePayload<?> payload) implemen
                 case ED25519, RSA256, RSA512 -> bin.ssh_bytes(signature);
                 case ECDSA256, ECDSA384, ECDSA521 -> {
                     try (var tmp = SSHWireFormat.create()) {
-                        int clen = sig.key.curvelen;
+                        var clen = sig.key.curvelen;
                         byte[] rs = Helpers.der2rs(signature, sig.key.curvelen);
                         byte[] r = Arrays.copyOfRange(rs, 0, clen);
                         byte[] s = Arrays.copyOfRange(rs, clen, rs.length);

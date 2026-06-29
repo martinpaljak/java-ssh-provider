@@ -17,8 +17,8 @@ public final class SignRequest extends AgentMessage<SignRequest> {
     final DTBSPayload<?> parsed;
 
     // Signature flags
-    public final static int SSH_AGENT_RSA_SHA2_256 = 2;
-    public final static int SSH_AGENT_RSA_SHA2_512 = 4;
+    public static final int SSH_AGENT_RSA_SHA2_256 = 2;
+    public static final int SSH_AGENT_RSA_SHA2_512 = 4;
 
     public SignRequest(SSHIdentity identity, byte[] dtbs, int flags) {
         super(SSH_AGENTC_SIGN_REQUEST);

@@ -87,10 +87,12 @@ public final class CertificatePayloadBuilder {
     }
 
     public CertificatePayloadBuilder after(Instant after) {
-        if (after.isBefore(Instant.EPOCH))
+        if (after.isBefore(Instant.EPOCH)) {
             throw new IllegalArgumentException("After must be after epoch");
-        if (after.isAfter(beforeInstant))
+        }
+        if (after.isAfter(beforeInstant)) {
             throw new IllegalArgumentException("After must be before before");
+        }
         this.after = after.getEpochSecond();
         this.afterInstant = after;
         return this;
@@ -103,8 +105,9 @@ public final class CertificatePayloadBuilder {
     }
 
     public CertificatePayloadBuilder before(Instant before) {
-        if (before.isBefore(afterInstant))
+        if (before.isBefore(afterInstant)) {
             throw new IllegalArgumentException("Before must be after after");
+        }
         if (before.equals(Instant.MAX)) {
             this.before = -1;
         } else {
@@ -156,12 +159,24 @@ public final class CertificatePayloadBuilder {
 
     public CertificatePayload build() {
         // Validate required fields
-        if (type == null) throw new IllegalStateException("Type must be set");
-        if (publicKey == null) throw new IllegalStateException("Public key must be set");
-        if (serial == null) throw new IllegalStateException("Serial must be set");
-        if (certType == 0) throw new IllegalStateException("Certificate type must be set");
-        if (id == null) throw new IllegalStateException("ID must be set");
-        if (signKey == null) throw new IllegalStateException("Sign key must be set");
+        if (type == null) {
+            throw new IllegalStateException("Type must be set");
+        }
+        if (publicKey == null) {
+            throw new IllegalStateException("Public key must be set");
+        }
+        if (serial == null) {
+            throw new IllegalStateException("Serial must be set");
+        }
+        if (certType == 0) {
+            throw new IllegalStateException("Certificate type must be set");
+        }
+        if (id == null) {
+            throw new IllegalStateException("ID must be set");
+        }
+        if (signKey == null) {
+            throw new IllegalStateException("Sign key must be set");
+        }
 
 
         try (var stream = SSHWireFormat.create()) {
@@ -208,7 +223,7 @@ public final class CertificatePayloadBuilder {
             // Write signature key (with type)
             stream.ssh_bytes(signKey.toBytes());
 
-            byte[] dtbs = stream.bytes();
+            var dtbs = stream.bytes();
 
             return new CertificatePayload(
                     dtbs,
@@ -236,7 +251,7 @@ public final class CertificatePayloadBuilder {
         var signature = signer.sign(payload.dtbs());
         return signature.thenApply(sig -> {
             System.out.println("Signature: " + Helpers.toHex(sig.toBytes()));
-            SSHSignature sig2 = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sig.toBytes()));
+            var sig2 = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sig.toBytes()));
             System.out.println("Signature: " + sig2);
             var certbytes = Helpers.concatenate(payload.dtbs(), SSHWireFormat.bytes(sig.toBytes()));
             //var certbytes = Helpers.concatenate(payload.dtbs(), sig.toBytes());

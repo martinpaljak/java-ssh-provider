@@ -29,21 +29,21 @@ public final class LinedConfigFile<T> implements Collection<LinedConfigFile.Pars
         record Valid<T>(T value, String line) implements ParseResult<T> {
             @Override
             public String toString() {
-                return String.format("%s[%s]", value.getClass().getSimpleName(), line);
+                return "%s[%s]".formatted(value.getClass().getSimpleName(), line);
             }
         }
 
         record Comment<T>(String line) implements ParseResult<T> {
             @Override
             public String toString() {
-                return String.format("%s[%s]", this.getClass().getSimpleName(), line);
+                return "%s[%s]".formatted(this.getClass().getSimpleName(), line);
             }
         }
 
         record Invalid<T>(String reason, String line) implements ParseResult<T> {
             @Override
             public String toString() {
-                return String.format("%s[reason=%s, %s]", this.getClass().getSimpleName(), reason, line);
+                return "%s[reason=%s, %s]".formatted(this.getClass().getSimpleName(), reason, line);
             }
         }
     }

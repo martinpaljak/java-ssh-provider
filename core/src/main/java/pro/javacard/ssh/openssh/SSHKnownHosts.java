@@ -121,7 +121,7 @@ public final class SSHKnownHosts {
 
         @Override
         public String toNormalizedString() {
-            return String.format("|%d|%s|%s %s", version, Helpers.base64(salt), Helpers.base64(hash), key.asString());
+            return "|%d|%s|%s %s".formatted(version, Helpers.base64(salt), Helpers.base64(hash), key.asString());
         }
     }
 
@@ -208,6 +208,6 @@ public final class SSHKnownHosts {
     @Override
     public String toString() {
         // TLC: this .count() approach is not very efficient
-        return String.format("[known_hosts file with %d entries]", config.entries().count());
+        return "[known_hosts file with %d entries]".formatted(config.entries().count());
     }
 }

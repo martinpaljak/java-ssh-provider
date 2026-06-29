@@ -63,7 +63,7 @@ public final class SSHX509Certificate extends X509Certificate implements SSHIden
         log.finest("X509Certificate type: %s".formatted(type));
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            X509Certificate x509 = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(der));
+            var x509 = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(der));
             return new SSHX509Certificate(type, x509);
         } catch (CertificateException e) {
             throw new IllegalArgumentException(e);

@@ -144,7 +144,7 @@ public class TestProviderKeyStore {
             Assert.assertEquals(key, keypair.privateKey());
 
             var entrytype = SSHPublicKey.fromJavaKey(keypair.publicKey()).getSSHType();
-            var signaturetype = entrytype.equals("ssh-rsa") ? "rsa-sha2-512" : entrytype;
+            var signaturetype = "ssh-rsa".equals(entrytype) ? "rsa-sha2-512" : entrytype;
             var nativesignaturetype = SSHSignature.SigConf.fromSSH(signaturetype).javasig;
             log.info("Key type: " + entrytype);
             log.info("Native signature: " + nativesignaturetype);
@@ -194,7 +194,7 @@ public class TestProviderKeyStore {
                 sshsig.setParameter(new SSHSIGSigningParameters(pk.getCertificate().getPublicKey(), "file"));
                 sshsig.initSign(pk.getPrivateKey());
                 sshsig.update(payload);
-                byte[] signature = sshsig.sign();
+                var signature = sshsig.sign();
 
                 System.err.println("Verifying signature...");
                 sshsig.setParameter(new SSHSIGVerificationParameters("file"));
@@ -214,8 +214,9 @@ public class TestProviderKeyStore {
         Security.addProvider(new SSHProvider());
         for (Provider provider : Security.getProviders()) {
             System.out.println(provider.getName());
-            for (String key : provider.stringPropertyNames())
+            for (String key : provider.stringPropertyNames()) {
                 System.out.println("\t" + key + "\t" + provider.getProperty(key));
+            }
         }
     }
 }

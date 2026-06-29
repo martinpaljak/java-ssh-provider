@@ -115,7 +115,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
         }
 
         // get and validate parameters
-        SSHSIGSigningParameters sigspec = (SSHSIGSigningParameters) params;
+        var sigspec = (SSHSIGSigningParameters) params;
 
         // hash data
         var hash = digest.digest();
@@ -129,7 +129,7 @@ public final class SSHSIGSignatureSpi extends SignatureSpi {
             // UNLESS it is webauthn, when the signature type is unique
             final String sigtype;
             if ("ssh-rsa".equals(identity.getKey().getSSHType())) {
-                sigtype = params.hash().equals("SHA-512") ? "rsa-sha2-512" : "rsa-sha2-256";
+                sigtype = "SHA-512".equals(params.hash()) ? "rsa-sha2-512" : "rsa-sha2-256";
             } else {
                 sigtype = identity.getKey().getSSHType();
             }

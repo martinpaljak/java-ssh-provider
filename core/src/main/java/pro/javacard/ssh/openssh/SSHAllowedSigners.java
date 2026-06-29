@@ -111,7 +111,7 @@ public final class SSHAllowedSigners {
 
             @Override
             public String toString() {
-                return String.format("%s=%s", NAMESPACES, quote(String.join(",", values)));
+                return "%s=%s".formatted(NAMESPACES, quote(String.join(",", values)));
             }
         }
 
@@ -128,7 +128,7 @@ public final class SSHAllowedSigners {
 
             @Override
             public String toString() {
-                return String.format("%s=%s", VALID_AFTER, quote(formatTimestamp(timestamp)));
+                return "%s=%s".formatted(VALID_AFTER, quote(formatTimestamp(timestamp)));
             }
         }
 
@@ -145,7 +145,7 @@ public final class SSHAllowedSigners {
 
             @Override
             public String toString() {
-                return String.format("%s=%s", VALID_BEFORE, quote(formatTimestamp(timestamp)));
+                return "%s=%s".formatted(VALID_BEFORE, quote(formatTimestamp(timestamp)));
             }
         }
 
@@ -244,8 +244,9 @@ public final class SSHAllowedSigners {
         if (parts.size() > offset + 2) {
             log.warning("Comments are not supported in allowed signers file: " + line);
         }
-        if (options.contains(new Option.CertAuthority()))
+        if (options.contains(new Option.CertAuthority())) {
             return new CertAuthorityEntry(principals, options, k);
+        }
         return new KeyEntry(principals, options, k);
     }
 

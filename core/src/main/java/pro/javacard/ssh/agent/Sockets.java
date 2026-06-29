@@ -23,9 +23,9 @@ public final class Sockets {
     public static final String SSH_AUTH_SOCK = "SSH_AUTH_SOCK";
     private static final Logger log = Logger.getLogger(Sockets.class.getName());
 
-    private final static int MAX_MESSAGE_SIZE = SSHWireFormat.MAX_MESSAGE_LENGTH; // Note: might want to increase this
-    public final static int OFFSET_LENGTH = 0;
-    public final static int OFFSET_TYPE = 4;
+    private static final int MAX_MESSAGE_SIZE = SSHWireFormat.MAX_MESSAGE_LENGTH; // Note: might want to increase this
+    public static final int OFFSET_LENGTH = 0;
+    public static final int OFFSET_TYPE = 4;
     // Indicates if POSIX file permission checks should be done on config files
     static final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
 

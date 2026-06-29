@@ -41,8 +41,9 @@ public enum KeyConf {
     }
 
     private static <T> T require(T value, String message) {
-        if (value == null)
+        if (value == null) {
             throw new IllegalArgumentException(message);
+        }
         return value;
     }
 

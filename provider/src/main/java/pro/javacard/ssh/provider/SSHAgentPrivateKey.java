@@ -13,8 +13,8 @@ public class SSHAgentPrivateKey implements PrivateKey {
     private static final long serialVersionUID = -1339182214225875712L;
 
     // NOTE: not private intentionally
-    transient final SSHIdentity identity;
-    transient final Path socket;
+    final transient SSHIdentity identity;
+    final transient Path socket;
 
     SSHAgentPrivateKey(SSHIdentity identity, Path socket) {
         this.identity = identity;
