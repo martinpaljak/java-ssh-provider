@@ -1,7 +1,7 @@
 # SSHProvider.java
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/java-ssh-provider/blob/main/LICENSE)
 &nbsp;[![Latest release](https://img.shields.io/github/release/martinpaljak/java-ssh-provider.svg)](https://github.com/martinpaljak/java-ssh-provider/releases/latest)
-&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=maven&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fmaven%2Fcom%2Fgithub%2Fmartinpaljak%2Fsshprovider%2Fmaven-metadata.xml)](https://gist.github.com/martinpaljak/c77d11d671260e24eef6c39123345cae)
+&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=maven&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fmaven%2Fpro%2Fjavacard%2Fssh-provider%2Fmaven-metadata.xml)](https://gist.github.com/martinpaljak/c77d11d671260e24eef6c39123345cae)
 &nbsp;[![Build status](https://github.com/martinpaljak/java-ssh-provider/actions/workflows/robot.yml/badge.svg?branch=main)](https://github.com/martinpaljak/java-ssh-provider/actions)
 &nbsp;[![Made in Estonia](https://img.shields.io/badge/Made_in-Estonia-blue)](https://estonia.ee)
 
@@ -28,7 +28,7 @@ Generate standard signatures with a key in hardware via `$SSH_AUTH_SOCK`
 
 
 ```java
-import com.hardssh.provider.SSHProvider;
+import pro.javacard.ssh.provider.SSHProvider;
 
 Security.addProvider(new SSHProvider()); // Add the provider
 
@@ -101,7 +101,7 @@ Assert.assertTrue(sig.verify(signature));
 ## Installation
 
 > [!IMPORTANT]
-> Requires Java 21+ and currently targeting unices only. Source publish pending on final package re-structuring and cleanups. `com.hardssh.provider.SSHProvider` is here to stay.
+> Requires Java 21+ and currently targeting unices only. Source publish pending on final package re-structuring and cleanups. `pro.javacard.ssh.provider.SSHProvider` is here to stay.
 
 With Maven:
 ```xml
@@ -114,9 +114,9 @@ With Maven:
 
 <dependencies>
     <dependency>
-        <groupId>com.github.martinpaljak</groupId>
-        <artifactId>sshprovider</artifactId>
-        <version>25.02.21</version>
+        <groupId>pro.javacard</groupId>
+        <artifactId>ssh-provider</artifactId>
+        <version>26.06.29</version>
     </dependency>
 </dependencies>
 ```

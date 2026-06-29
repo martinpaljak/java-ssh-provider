@@ -1,0 +1,49 @@
+version = 1
+
+# Project-owned configuration, build, and documentation files.
+# These are not Java source and do not carry per-file SPDX comments;
+# bulk-declared here per REUSE.software v3.3.
+[[annotations]]
+path = [
+    "Makefile",
+    "README.md",
+    ".gitignore",
+    ".github/**",
+    ".mvn/maven.config",
+    ".mvn/jvm.config",
+    "pom.xml",
+    "**/pom.xml",
+    "**/README.md",
+    "spotbugs.xml",
+    "allowed_signers",
+    "**/*.properties",
+    "**/*.yaml",
+    "**/*.yml",
+    "**/src/test/resources/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 Martin Paljak <martin@martinpaljak.net>"
+SPDX-License-Identifier = "MIT"
+
+# Maven Wrapper: vendored from the Apache Maven project (Apache-2.0).
+[[annotations]]
+path = [
+    "mvnw",
+    "mvnw.cmd",
+    ".mvn/wrapper/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "The Apache Software Foundation"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Test vectors copied verbatim from openssh-portable (sshsig regression
+# testdata and a known_hosts sample). Upstream OpenSSH license, overriding
+# the blanket test-resources rule above.
+[[annotations]]
+path = [
+    "provider/src/test/resources/openssh-testdata/**",
+    "core/src/test/resources/pro/javacard/ssh/tests/openssh_known_hosts.txt",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "The OpenSSH authors (https://github.com/openssh/openssh-portable)"
+SPDX-License-Identifier = "SSH-OpenSSH"
