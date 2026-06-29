@@ -12,7 +12,7 @@ The missing key management bridge between (Open)SSH and Java worlds. `SSHProvide
 - verify and create [`SSHSIG`](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.sshsig) and raw SSH signature formats, also with [SSH certificates](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys) (including [webauthn signatures](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f#L222-L246))
 - use existing OpenSSH [`allowed_signers`](https://man.openbsd.org/ssh-keygen.1#ALLOWED_SIGNERS) trust anchoring files (as used by Git, for example)
 
-[Reproducible](https://reproducible-builds.org) 175K .jar with pure Java and _zero_ 3rd party dependencies.
+[Reproducible](https://reproducible-builds.org) 185K .jar with pure Java and _zero_ 3rd party dependencies.
 
 > [!TIP]
 > Sign easily with local hardware keys on remote machines with SSH agent forwarding ❤️
@@ -44,7 +44,7 @@ for (String alias : Collections.list(ks.aliases())) {
 String alias = "SHA256:5DmYCoIkCgEoOnbx3K+UXLhHVh8pX8GXgf7IS8i9QPo";
 
 PrivateKey key = (PrivateKey) ks.getKey(alias);
-Signature sig = Signature.getInstance("SHA256withECDSA");
+Signature sig = Signature.getInstance("SHA256withECDSA", new SSHProvider());
 sig.initSign(key);
 
 // Continue as usual
@@ -64,10 +64,10 @@ $ ssh-keygen -Y sign -n file -f /tmp/id_ed25519 /tmp/helloworld.txt
 Verify it with Java (or vice-versa):
 
 ```java
-PublicKey pub = SSHIdentity.fromPath(Paths.get("/tmp/id_ed25519.pub"));
+PublicKey pub = SSHIdentity.from(Paths.get("/tmp/id_ed25519.pub")).getKey();
 byte[] signature = SSHSIG.fromArmored(Paths.get("/tmp/helloworld.txt.sig"));
 Signature sig = Signature.getInstance("SSHSIG");
-sig.setParameter(new SSHSIGVerificationSpec("file"));
+sig.setParameter(new SSHSIGVerificationParameters("file"));
 sig.initVerify(pub);
 sig.update(Files.readAllBytes(Paths.get("/tmp/helloworld.txt")))
 Assert.assertTrue(sig.verify(signature));
@@ -85,9 +85,9 @@ Assert.assertTrue(sig.verify(signature));
 - Signature `SHA256withRSA` (sign, agent only)
 - Signature `SHA512withRSA` (sign, agent only)
 - Signature `ssh-ed25519` (sign, verify)
-- Signature `ssh-ecdsa-nistp256` (sign, verify)
-- Signature `ssh-ecdsa-nistp384` (sign, verify)
-- Signature `ssh-ecdsa-nistp521` (sign, verify)
+- Signature `ecdsa-sha2-nistp256` (sign, verify)
+- Signature `ecdsa-sha2-nistp384` (sign, verify)
+- Signature `ecdsa-sha2-nistp521` (sign, verify)
 - Signature `rsa-sha2-256` (sign, verify)
 - Signature `rsa-sha2-512` (sign, verify)
 - Signature `sk-ssh-ed25519@openssh.com` (sign (agent only), verify)
@@ -101,7 +101,7 @@ Assert.assertTrue(sig.verify(signature));
 ## Installation
 
 > [!IMPORTANT]
-> Requires Java 21+ and currently targeting unices only. Source publish pending on final package re-structuring and cleanups. `pro.javacard.ssh.provider.SSHProvider` is here to stay.
+> Requires Java 21+ and currently targeting unices only.
 
 With Maven:
 ```xml
