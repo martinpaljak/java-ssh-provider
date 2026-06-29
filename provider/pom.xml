@@ -6,7 +6,7 @@
     <parent>
         <groupId>pro.javacard</groupId>
         <artifactId>java-ssh-provider</artifactId>
-        <version>26.06.29</version>
+        <version>26.06.30-SNAPSHOT</version>
     </parent>
 
     <artifactId>ssh-provider</artifactId>

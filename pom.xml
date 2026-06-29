@@ -6,7 +6,7 @@
 
     <groupId>pro.javacard</groupId>
     <artifactId>java-ssh-provider</artifactId>
-    <version>26.06.29</version>
+    <version>26.06.30-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Java SSH Provider</name>
     <url>https://github.com/martinpaljak/java-ssh-provider</url>
@@ -14,7 +14,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <project.build.outputTimestamp>2026-06-29T07:38:36Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-06-29T07:38:41Z</project.build.outputTimestamp>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
     <organization>
