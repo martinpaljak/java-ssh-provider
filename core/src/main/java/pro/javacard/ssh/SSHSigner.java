@@ -72,7 +72,7 @@ public interface SSHSigner {
         });
     }
 
-    private static SSHSigner signer(SSHIdentity identity, Function<byte[], SSHSignature> f) {
+    static SSHSigner signer(SSHIdentity identity, Function<byte[], SSHSignature> f) {
         return new SSHSigner() {
             @Override
             public SSHIdentity identity() {

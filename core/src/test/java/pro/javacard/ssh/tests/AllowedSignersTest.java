@@ -4,10 +4,14 @@ package pro.javacard.ssh.tests;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import pro.javacard.ssh.SSHIdentity;
 import pro.javacard.ssh.openssh.SSHAllowedSigners;
+import pro.javacard.ssh.openssh.SSHAllowedSigners.CertAuthorityEntry;
+import pro.javacard.ssh.openssh.SSHAllowedSigners.KeyEntry;
 import pro.javacard.ssh.openssh.SSHAllowedSigners.Option.CertAuthority;
 import pro.javacard.ssh.openssh.SSHAllowedSigners.Option.Namespaces;
 import pro.javacard.ssh.openssh.SSHAllowedSigners.Option.ValidAfter;
+import pro.javacard.ssh.testing.TestUtils;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -53,6 +57,32 @@ public class AllowedSignersTest {
         Assert.assertEquals(found.size(), 1);
         found.forEach(System.out::println);
         f.getConfig().forEach(System.out::println);
+
+        var key = identity("/k/ed25519.pub");
+        var caP256 = identity("/k/ca_p256.pub");
+        var caEd25519 = identity("/k/ca_ed25519.pub");
+        var certByCaP256 = identity("/k/ed25519_ca_p256-cert.pub");
+        var certByCaEd25519 = identity("/k/p256_ca_ed25519-cert.pub");
+
+        var g = SSHAllowedSigners.parse("""
+                *@example.com %s
+                *@example.com cert-authority %s
+                *@example.com %s
+                """.formatted(key.asString(), caP256.asString(), caEd25519.asString()));
+
+        Assert.assertTrue(g.allows(key, "ed25519@example.com", "git", time).orElseThrow() instanceof KeyEntry);
+        Assert.assertTrue(g.allows(certByCaP256, "ed25519@example.com", "git", time).orElseThrow() instanceof CertAuthorityEntry);
+        // The CA is listed as a plain key, so a certificate it issued is not allowed
+        Assert.assertTrue(g.allows(certByCaEd25519, "p256@example.com", "git", time).isEmpty());
+        // ... and the CA key on its own can not sign
+        Assert.assertTrue(g.allows(caP256, "git", time).isEmpty());
+        // The certificate does not carry the requested principal
+        Assert.assertTrue(g.allows(certByCaP256, "other@example.com", "git", time).isEmpty());
+        Assert.assertTrue(g.allows(identity("/k/p256.pub"), "git", time).isEmpty());
+    }
+
+    static SSHIdentity identity(String resource) throws IOException {
+        return SSHIdentity.fromString(TestUtils.resourceString(resource)).real();
     }
 
     @Test

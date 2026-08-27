@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 package pro.javacard.ssh.openssh;
 
+import pro.javacard.ssh.SSHCertificate;
 import pro.javacard.ssh.SSHIdentity;
 import pro.javacard.ssh.SSHPublicKey;
 import pro.javacard.ssh.utils.Helpers;
@@ -326,5 +327,31 @@ public final class SSHAllowedSigners {
 
     public List<AllowedSignersEntry> validEntries(String namespace, Clock clock) {
         return validEntries(null, namespace, clock);
+    }
+
+    // Get the entry that allows this signer: the key itself, or for a certificate the CA that issued it
+    public Optional<AllowedSignersEntry> allows(SSHIdentity signer, String principal, String namespace, Clock clock) {
+        var real = signer.real();
+        final Class<? extends AllowedSignersEntry> type;
+        final SSHIdentity key;
+        if (real instanceof SSHCertificate cert) {
+            // Principals in the file are patterns, the ones in a certificate are names
+            if (!cert.valid(clock) || (principal != null && !cert.getPrincipals().contains(principal))) {
+                return Optional.empty();
+            }
+            type = CertAuthorityEntry.class;
+            key = cert.getSignatureKey();
+        } else {
+            type = KeyEntry.class;
+            key = real;
+        }
+        return validEntries(principal, namespace, clock).stream()
+                .filter(type::isInstance)
+                .filter(e -> e.key().equals(key))
+                .findFirst();
+    }
+
+    public Optional<AllowedSignersEntry> allows(SSHIdentity signer, String namespace, Clock clock) {
+        return allows(signer, null, namespace, clock);
     }
 }
