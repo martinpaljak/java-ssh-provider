@@ -4,6 +4,7 @@ package pro.javacard.ssh.provider;
 
 import pro.javacard.ssh.SSHIdentity;
 import pro.javacard.ssh.SSHPublicKey;
+import pro.javacard.ssh.openssh.SSHSIG;
 
 import java.security.PublicKey;
 import java.util.Objects;
@@ -22,8 +23,6 @@ public record SSHSIGSigningParameters(String namespace, SSHIdentity identity,
             throw new IllegalArgumentException("namespace can not be blank");
         }
         Objects.requireNonNull(hash, "hash can not be null");
-        if (!SSHSIGSignatureSpi.javahash2ssh.keySet().contains(hash)) {
-            throw new IllegalArgumentException("hash must be either SHA-256 or SHA-512");
-        }
+        SSHSIG.Hash.fromJava(hash);
     }
 }

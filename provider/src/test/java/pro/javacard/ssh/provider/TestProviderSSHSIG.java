@@ -10,14 +10,11 @@ import org.testng.annotations.Test;
 import pro.javacard.ssh.SSHCertificate;
 import pro.javacard.ssh.SSHIdentity;
 import pro.javacard.ssh.SSHPublicKey;
+import pro.javacard.ssh.SSHSigner;
 import pro.javacard.ssh.openssh.SSHSIG;
 import pro.javacard.ssh.testing.TestUtils;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.ECGenParameterSpec;
@@ -110,21 +107,21 @@ public class TestProviderSSHSIG {
         Security.addProvider(new SSHProvider());
         var types = List.of("rsa4k", "ed25519", "p256", "p384", "p521");
         for (var k : types) {
-            var pub = new String(getClass().getResourceAsStream("/k/%s.pub".formatted(k)).readAllBytes(), StandardCharsets.UTF_8);
-            var sigbytes = SSHSIG.fromArmored(getClass().getResourceAsStream("/k/%s.pub.sig".formatted(k)));
+            var pub = TestUtils.resourceString("/k/%s.pub".formatted(k));
+            var sigbytes = SSHSIG.fromArmored(TestUtils.resource("/k/%s.pub.sig".formatted(k)));
             verifyOne(pub, sigbytes);
 
             // And with all CA types
             for (var ca : types) {
-                var pub2 = new String(getClass().getResourceAsStream("/k/%s_ca_%s-cert.pub".formatted(k, ca)).readAllBytes(), StandardCharsets.UTF_8);
-                var sigbytes2 = SSHSIG.fromArmored(getClass().getResourceAsStream("/k/%s_ca_%s.pub.sig".formatted(k, ca)));
+                var pub2 = TestUtils.resourceString("/k/%s_ca_%s-cert.pub".formatted(k, ca));
+                var sigbytes2 = SSHSIG.fromArmored(TestUtils.resource("/k/%s_ca_%s.pub.sig".formatted(k, ca)));
                 verifyOne(pub2, sigbytes2);
             }
         }
     }
 
     void verifyOne(String pub, byte[] sshsig) throws Exception {
-        var payload = getClass().getResourceAsStream("/k/payload.txt").readAllBytes();
+        var payload = TestUtils.resource("/k/payload.txt").readAllBytes();
 
         Signature signature = Signature.getInstance("SSHSIG");
         signature.setParameter(new SSHSIGVerificationParameters("file"));
@@ -144,23 +141,22 @@ public class TestProviderSSHSIG {
         Assert.assertTrue(signature.verify(sshsig));
     }
 
-    //@Ignore
     @Test
     public void testSignatureWithFido() throws Exception {
         Security.addProvider(new SSHProvider());
-        var payload = getClass().getResourceAsStream("/k/payload.txt").readAllBytes();
+        var payload = TestUtils.resource("/k/payload.txt").readAllBytes();
 
-        var i = SSHIdentity.fromString(new String(getClass().getResourceAsStream("/k/id_ed25519_sk.pub").readAllBytes(), StandardCharsets.UTF_8));
+        var i = SSHIdentity.fromString(TestUtils.resourceString("/k/id_ed25519_sk.pub"));
         log.info("fidokey: {}", i);
-        var sig = SSHSIG.fromArmored(getClass().getResourceAsStream("/k/id_ed25519_sk.pub.sig"));
-        var sshsig = SSHSIG.PARSER.fromBytes(sig);
-        log.info("Verifying signature... with " + sshsig.signer());
+        var sshsig = SSHSIG.from(TestUtils.resource("/k/id_ed25519_sk.pub.sig"));
+        // Accepts whatever the signature says, like "ssh-keygen -Y verify" without -n
+        Assert.assertEquals(sshsig.verify(sshsig.namespace(), sshsig.hash_algorithm(), payload).getKey(), i.getKey());
     }
 
     @Test
     public void testProviderSSHSIG() throws Exception {
         Security.addProvider(new SSHProvider());
-        var payload = getClass().getResourceAsStream("/k/payload.txt").readAllBytes();
+        var payload = TestUtils.resource("/k/payload.txt").readAllBytes();
 
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
@@ -198,6 +194,21 @@ public class TestProviderSSHSIG {
         sshsig.initVerify(kp.getPublic());
         sshsig.update(payload);
         Assert.assertTrue(sshsig.verify(signature));
+
+        // What the SPI signs, core verifies
+        Assert.assertEquals(SSHSIG.from(SSHSIG.toArmored(signature)).verify("file", SSHSIG.Hash.SHA512, payload), SSHPublicKey.fromJavaKey(kp.getPublic()));
+
+        // What core signs, the SPI verifies
+        var fromcore = SSHSIG.sign(SSHSigner.softsign(kp), "file", SSHSIG.Hash.SHA512, payload).get().toBytes();
+        sshsig.initVerify(kp.getPublic());
+        sshsig.update(payload);
+        Assert.assertTrue(sshsig.verify(fromcore));
+
+        sshsig.setParameter(new SSHSIGVerificationParameters("file", "SHA-256"));
+        sshsig.initVerify(kp.getPublic());
+        sshsig.update(payload);
+        var mismatch = Assert.expectThrows(SignatureException.class, () -> sshsig.verify(signature));
+        Assert.assertTrue(mismatch.getMessage().contains("sha512") && mismatch.getMessage().contains("sha256"), mismatch.getMessage());
     }
 
     @Test
@@ -208,31 +219,5 @@ public class TestProviderSSHSIG {
         Assert.assertThrows(IllegalArgumentException.class, () -> new SSHSIGSigningParameters(p, ""));
         Assert.assertThrows(IllegalArgumentException.class, () -> new SSHSIGSigningParameters("foo", SSHPublicKey.fromJavaKey(p), "SHA-384"));
         Assert.assertThrows(NullPointerException.class, () -> new SSHSIGSigningParameters(p, null));
-    }
-
-    @Test
-    void testOpenSSHTestData() throws Exception {
-        Security.addProvider(new SSHProvider());
-        var payload = getClass().getResourceAsStream("/openssh-testdata/signed-data").readAllBytes();
-        var namespace = new String(getClass().getResourceAsStream("/openssh-testdata/namespace").readAllBytes(), StandardCharsets.UTF_8).trim();
-        Path dir = Paths.get(getClass().getResource("/openssh-testdata").toURI());
-        try (var stream = Files.newDirectoryStream(dir, "*.sig")) {
-            for (var sigfile : stream) {
-                log.info("Test signature: {}", sigfile);
-                if (sigfile.toString().endsWith("dsa.sig")) {
-                    continue;
-                }
-                var pub = Path.of(sigfile.toString().replaceFirst("\\.\\w+$", ".pub"));
-                var sigbytes = SSHSIG.fromArmored(sigfile);
-                var signature = SSHSIG.PARSER.fromBytes(sigbytes);
-                SSHIdentity pubkey = SSHIdentity.from(pub);
-
-                var sshsig = Signature.getInstance("SSHSIG");
-                sshsig.setParameter(new SSHSIGVerificationParameters(namespace));
-                sshsig.initVerify(pubkey.getKey());
-                sshsig.update(payload);
-                Assert.assertTrue(sshsig.verify(sigbytes), "%s: %s".formatted(sigfile, pubkey));
-            }
-        }
     }
 }

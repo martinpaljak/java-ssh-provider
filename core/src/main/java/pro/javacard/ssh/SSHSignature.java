@@ -260,10 +260,14 @@ public record SSHSignature(String type, SSHSignaturePayload<?> payload) implemen
         }
     }
 
+    // The FIDO appdata of a WebAuthn credential is the host of its origin
+    public static byte[] webauthn_appdata(String origin) {
+        return Objects.requireNonNull(URI.create(origin).getHost(), "Could not parse origin for host").getBytes(StandardCharsets.UTF_8);
+    }
+
     public static byte[] dtbs_webauthn(byte[] message, String origin, byte flags, long counter) {
-        var appdata = Objects.requireNonNull(URI.create(origin).getHost(), "Could not parse origin for host").getBytes(StandardCharsets.UTF_8);
         var clientdata = webauthn_clientdata(message, origin).getBytes(StandardCharsets.UTF_8);
-        return dtbs_fido(clientdata, appdata, flags, counter);
+        return dtbs_fido(clientdata, webauthn_appdata(origin), flags, counter);
     }
 
     // Generates webauthn clientdata _prefix_ usable for checking the client data

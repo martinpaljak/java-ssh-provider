@@ -6,6 +6,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import pro.javacard.ssh.SSHIdentity;
+import pro.javacard.ssh.testing.TestUtils;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -22,7 +23,7 @@ public class TestKeyFactory {
     public void testFactory() throws Exception {
         Security.addProvider(new SSHProvider());
         KeyFactory factory = KeyFactory.getInstance("SSH");
-        var spec = OpenSSHPublicKeySpec.fromStream(getClass().getResourceAsStream("/k/ed25519.pub"));
+        var spec = OpenSSHPublicKeySpec.fromStream(TestUtils.resource("/k/ed25519.pub"));
         var pub = factory.generatePublic(spec);
         Assert.assertEquals(pub.getAlgorithm(), "EdDSA");
         Assert.assertEquals(pub.getFormat(), "SSH");
@@ -32,7 +33,7 @@ public class TestKeyFactory {
     public void testFactoryGeneratePrivate() throws Exception {
         Security.addProvider(new SSHProvider());
         var factory = KeyFactory.getInstance("SSH");
-        var spec = OpenSSHPublicKeySpec.fromStream(getClass().getResourceAsStream("/k/ed25519.pub"));
+        var spec = OpenSSHPublicKeySpec.fromStream(TestUtils.resource("/k/ed25519.pub"));
         factory.generatePrivate(spec);
     }
 
@@ -40,7 +41,7 @@ public class TestKeyFactory {
     public void testFactoryGenerateCRLs() throws Exception {
         Security.addProvider(new SSHProvider());
         var factory = KeyFactory.getInstance("SSH");
-        var i = SSHIdentity.from(getClass().getResourceAsStream("/k/ed25519.pub"));
+        var i = SSHIdentity.from(TestUtils.resource("/k/ed25519.pub"));
         factory.translateKey(i.getKey());
     }
 }

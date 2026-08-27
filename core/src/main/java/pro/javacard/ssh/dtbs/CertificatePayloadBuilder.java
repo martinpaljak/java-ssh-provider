@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public final class CertificatePayloadBuilder {
@@ -33,7 +34,6 @@ public final class CertificatePayloadBuilder {
     private Map<String, byte[]> options;
     private Map<String, byte[]> extensions;
     private byte[] reserved = new byte[0];
-    private SSHPublicKey signKey;
 
     public CertificatePayloadBuilder() {
         this.principals = new ArrayList<>();
@@ -137,11 +137,6 @@ public final class CertificatePayloadBuilder {
         return this;
     }
 
-    public CertificatePayloadBuilder signKey(SSHPublicKey signKey) {
-        this.signKey = signKey;
-        return this;
-    }
-
     public CertificatePayloadBuilder reserved(byte[] reserved) {
         this.reserved = reserved.clone();
         return this;
@@ -157,7 +152,7 @@ public final class CertificatePayloadBuilder {
         }
     }
 
-    public CertificatePayload build() {
+    public CertificatePayload build(SSHPublicKey signKey) {
         // Validate required fields
         if (type == null) {
             throw new IllegalStateException("Type must be set");
@@ -174,9 +169,7 @@ public final class CertificatePayloadBuilder {
         if (id == null) {
             throw new IllegalStateException("ID must be set");
         }
-        if (signKey == null) {
-            throw new IllegalStateException("Sign key must be set");
-        }
+        Objects.requireNonNull(signKey, "Sign key must be set");
 
 
         try (var stream = SSHWireFormat.create()) {
@@ -247,23 +240,10 @@ public final class CertificatePayloadBuilder {
 
     // Signer decides the signature format.
     public CompletableFuture<SSHCertificate> sign(SSHSigner signer) {
-        var payload = build();
-        var signature = signer.sign(payload.dtbs());
-        return signature.thenApply(sig -> {
-            System.out.println("Signature: " + Helpers.toHex(sig.toBytes()));
-            var sig2 = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sig.toBytes()));
-            System.out.println("Signature: " + sig2);
+        var payload = build(signer.identity().getKey());
+        return signer.sign(payload.dtbs()).thenApply(sig -> {
             var certbytes = Helpers.concatenate(payload.dtbs(), SSHWireFormat.bytes(sig.toBytes()));
-            //var certbytes = Helpers.concatenate(payload.dtbs(), sig.toBytes());
-            var cert = SSHCertificate.fromByteBuffer(ByteBuffer.wrap(certbytes));
-            //try {
-            // Verify the certificate signature to match the key embedded in payload
-            // cert.verify(signKey);
-            return cert;
-            //} catch (GeneralSecurityException e) {
-            //    System.out.println("Failed to verify certificate: " + e.getMessage());
-            //    throw new RuntimeException(e.getCause());
-            //}
+            return SSHCertificate.fromByteBuffer(ByteBuffer.wrap(certbytes));
         });
     }
 }

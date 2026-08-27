@@ -5,6 +5,7 @@ package pro.javacard.ssh.provider;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import pro.javacard.ssh.SSHIdentity;
+import pro.javacard.ssh.testing.TestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.security.Security;
@@ -19,7 +20,7 @@ public class TestCertificateFactory {
         Security.addProvider(new SSHProvider());
         CertificateFactory factory = CertificateFactory.getInstance("SSH");
 
-        var i = SSHIdentity.from(getClass().getResourceAsStream("/k/ed25519_ca_ed25519-cert.pub"));
+        var i = SSHIdentity.from(TestUtils.resource("/k/ed25519_ca_ed25519-cert.pub"));
         var b = i.toBytes();
         var cert = factory.generateCertificate(new ByteArrayInputStream(b));
         Assert.assertEquals(i, cert);
@@ -34,7 +35,7 @@ public class TestCertificateFactory {
         Security.addProvider(new SSHProvider());
         CertificateFactory factory = CertificateFactory.getInstance("SSH");
 
-        var i = SSHIdentity.from(getClass().getResourceAsStream("/k/ed25519.pub"));
+        var i = SSHIdentity.from(TestUtils.resource("/k/ed25519.pub"));
         var b = i.toBytes();
         factory.generateCertificate(new ByteArrayInputStream(b));
     }

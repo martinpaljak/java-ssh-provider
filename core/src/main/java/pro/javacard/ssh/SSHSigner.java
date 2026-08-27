@@ -4,17 +4,21 @@ package pro.javacard.ssh;
 
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
-@FunctionalInterface
 public interface SSHSigner {
+    // Some payloads embed the signer identity in the signed data
+    SSHIdentity identity();
+
     CompletableFuture<SSHSignature> sign(byte[] data);
 
-    static SSHSigner softsign(PrivateKey key) {
+    static SSHSigner softsign(KeyPair kp) {
 
-        var k = KeyConf.forKey(key);
+        var k = KeyConf.forKey(kp.getPrivate());
         var s = switch (k) {
             case RSA -> SSHSignature.SigConf.RSA512;
             case SECP256R1 -> SSHSignature.SigConf.ECDSA256;
@@ -24,46 +28,61 @@ public interface SSHSigner {
             default -> throw new IllegalArgumentException("Unsupported key type: " + k);
         };
 
-        return data -> CompletableFuture.completedFuture(softsigner(key, s, data));
+        return signer(SSHPublicKey.fromJavaKey(kp.getPublic()), data -> softsigner(kp.getPrivate(), s, data));
     }
 
-    static SSHSigner softsign_fido(PrivateKey key, byte[] appdata, byte flags, long counter) {
-        var k = KeyConf.forKey(key);
+    static SSHSigner softsign_fido(KeyPair kp, byte[] appdata, byte flags, long counter) {
+        var k = KeyConf.forKey(kp.getPrivate());
         var s = switch (k) {
             case SECP256R1 -> SSHSignature.SigConf.FIDOECDSA256;
             case ED25519 -> SSHSignature.SigConf.FIDOED25519;
             default -> throw new IllegalArgumentException("Unsupported key type: " + k);
         };
 
-        return data -> {
+        return signer(SSHPublicKey.fromJavaKey(kp.getPublic()).toFIDO(appdata), data -> {
             var data2 = SSHSignature.dtbs_fido(data, appdata, flags, counter);
             var rrsig = switch (s) {
                 case FIDOECDSA256 -> {
-                    var ss = softsigner(key, SSHSignature.SigConf.ECDSA256, data2);
+                    var ss = softsigner(kp.getPrivate(), SSHSignature.SigConf.ECDSA256, data2);
                     yield new SSHSignature.FIDOPayload<>((SSHSignature.ECDSAPayload) ss.payload(), flags, counter);
                 }
                 case FIDOED25519 -> {
-                    var ss = softsigner(key, SSHSignature.SigConf.ED25519, data2);
+                    var ss = softsigner(kp.getPrivate(), SSHSignature.SigConf.ED25519, data2);
                     yield new SSHSignature.FIDOPayload<>((SSHSignature.Ed25519Payload) ss.payload(), flags, counter);
                 }
                 default -> throw new IllegalArgumentException("Unsupported key type: " + s);
             };
 
-            return CompletableFuture.completedFuture(new SSHSignature(s.sshsig, rrsig));
-        };
+            return new SSHSignature(s.sshsig, rrsig);
+        });
     }
 
-    static SSHSigner softsign_webauthn(PrivateKey key, String origin, byte flags, long counter) {
-        var k = KeyConf.forKey(key);
+    static SSHSigner softsign_webauthn(KeyPair kp, String origin, byte flags, long counter) {
+        var k = KeyConf.forKey(kp.getPrivate());
         var s = switch (k) {
             case SECP256R1 -> SSHSignature.SigConf.WEBAUTHNECDSA256;
             default -> throw new IllegalArgumentException("Unsupported key type: " + k);
         };
-        return data -> {
+        var identity = SSHPublicKey.fromJavaKey(kp.getPublic()).toFIDO(SSHSignature.webauthn_appdata(origin));
+        return signer(identity, data -> {
             var data2 = SSHSignature.dtbs_webauthn(data, origin, flags, counter);
-            var ss = softsigner(key, SSHSignature.SigConf.ECDSA256, data2);
+            var ss = softsigner(kp.getPrivate(), SSHSignature.SigConf.ECDSA256, data2);
             var pload = new SSHSignature.WebAuthnPayload<>((SSHSignature.ECDSAPayload) ss.payload(), flags, counter, origin, SSHSignature.webauthn_clientdata(data, origin), new byte[0]);
-            return CompletableFuture.completedFuture(new SSHSignature(s.sshsig, pload));
+            return new SSHSignature(s.sshsig, pload);
+        });
+    }
+
+    private static SSHSigner signer(SSHIdentity identity, Function<byte[], SSHSignature> f) {
+        return new SSHSigner() {
+            @Override
+            public SSHIdentity identity() {
+                return identity;
+            }
+
+            @Override
+            public CompletableFuture<SSHSignature> sign(byte[] data) {
+                return CompletableFuture.completedFuture(f.apply(data));
+            }
         };
     }
 

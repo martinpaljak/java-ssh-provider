@@ -42,15 +42,14 @@ public class TestCertificates {
                 .principals(List.of("client"))
                 .after(Instant.now())
                 .before(Instant.now().plusSeconds(3600))
-                .options(Map.of("force-command", "echo 'Hello, world!'".getBytes()))
-                .signKey(fidoca);
+                .options(Map.of("force-command", "echo 'Hello, world!'".getBytes()));
 
-        var payload = builder.build();
+        var payload = builder.build(fidoca);
         var reparsed = CertificatePayload.PARSER.fromBytes(payload.dtbs());
         Assert.assertEquals(payload, reparsed);
-        //var certfu = builder.sign(SSHSigner.softsign_webauthn(ca.getPrivate(), "https://example.com", (byte) 0, 0));
-        var certfu = builder.sign(SSHSigner.softsign_fido(ca.getPrivate(), "example.com".getBytes(StandardCharsets.US_ASCII), (byte) 0x05, 0));
-        //var certfu = builder.sign(SSHSigner.softsign(ca.getPrivate()));
+        //var certfu = builder.sign(SSHSigner.softsign_webauthn(ca, "https://example.com", (byte) 0, 0));
+        var certfu = builder.sign(SSHSigner.softsign_fido(ca, "example.com".getBytes(StandardCharsets.US_ASCII), (byte) 0x05, 0));
+        //var certfu = builder.sign(SSHSigner.softsign(ca));
         var cert = certfu.get();
         cert.verify(fidoca);
         //Assert.assertThrows(SignatureException.class, () -> cert.verify(fidoca));

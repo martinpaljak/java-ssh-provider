@@ -4,6 +4,7 @@ package pro.javacard.ssh.openssh;
 
 import pro.javacard.ssh.SSHIdentity;
 import pro.javacard.ssh.SSHSignature;
+import pro.javacard.ssh.SSHSigner;
 import pro.javacard.ssh.utils.Helpers;
 import pro.javacard.ssh.utils.SSHSerializable;
 import pro.javacard.ssh.utils.SSHWireFormat;
@@ -14,21 +15,63 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ArrayRecordComponent")
-public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] reserved, String hash_algorithm,
+public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] reserved, SSHSIG.Hash hash_algorithm,
                      SSHSignature signature) implements SSHSerializable<SSHSIG> {
 
     private static final Logger log = Logger.getLogger(SSHSIG.class.getName());
 
-    public static final String SHA256 = "sha256";
-    public static final String SHA512 = "sha512";
     public static final int VERSION = 1; // Only supported version
+
+    public enum Hash {
+        SHA256("sha256", "SHA-256"),
+        SHA512("sha512", "SHA-512");
+
+        public final String sshhash;
+        public final String javahash;
+
+        Hash(String sshhash, String javahash) {
+            this.sshhash = sshhash;
+            this.javahash = javahash;
+        }
+
+        public static Hash fromSSH(String sshhash) {
+            for (var h : Hash.values()) {
+                if (h.sshhash.equals(sshhash)) {
+                    return h;
+                }
+            }
+            throw new IllegalArgumentException("Unsupported hash algorithm: " + sshhash);
+        }
+
+        public static Hash fromJava(String javahash) {
+            for (var h : Hash.values()) {
+                if (h.javahash.equals(javahash)) {
+                    return h;
+                }
+            }
+            throw new IllegalArgumentException("Unsupported hash algorithm: " + javahash);
+        }
+
+        public MessageDigest digest() {
+            try {
+                return MessageDigest.getInstance(javahash);
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("No " + javahash, e);
+            }
+        }
+    }
 
     // 2. Blob format
     //
@@ -79,10 +122,14 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
         return toArmored(toBytes());
     }
 
+    public static SSHSIG from(Object armored) throws IOException {
+        return fromByteBuffer(ByteBuffer.wrap(fromArmored(armored)));
+    }
+
     public static final Parser<SSHSIG> PARSER = SSHSIG::fromByteBuffer;
 
     public static SSHSIG fromByteBuffer(ByteBuffer buffer) {
-        byte[] mgc = new byte[MAGIC_LEN];
+        var mgc = new byte[MAGIC_LEN];
         buffer.get(mgc);
         if (!Arrays.equals(MAGIC(), mgc)) {
             throw new IllegalArgumentException("Invalid SSHSIG magic: " + Helpers.toHex(mgc));
@@ -91,21 +138,18 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
         if (version != VERSION) {
             throw new IllegalArgumentException("Unsupported SSHSIG version: " + version);
         }
-        byte[] pubkey = SSHWireFormat.get_bytes(buffer);
-        SSHIdentity identity = SSHIdentity.fromByteBuffer(ByteBuffer.wrap(pubkey));
-        String namespace = SSHWireFormat.get_string(buffer);
+        var pubkey = SSHWireFormat.get_bytes(buffer);
+        var identity = SSHIdentity.fromByteBuffer(ByteBuffer.wrap(pubkey));
+        var namespace = SSHWireFormat.get_string(buffer);
         if (namespace.isEmpty()) {
             throw new IllegalArgumentException("Empty namespace");
         }
-        byte[] reserved = SSHWireFormat.get_bytes(buffer);
+        var reserved = SSHWireFormat.get_bytes(buffer);
         if (reserved.length != 0) {
             log.warning("Reserved field is not empty: " + Helpers.toHex(reserved));
         }
-        String hash_algorithm = SSHWireFormat.get_string(buffer);
-        if (!SHA256.equals(hash_algorithm) && !SHA512.equals(hash_algorithm)) {
-            throw new IllegalArgumentException("Unsupported hash algorithm: " + hash_algorithm);
-        }
-        byte[] sigbytes = SSHWireFormat.get_bytes(buffer);
+        var hash_algorithm = Hash.fromSSH(SSHWireFormat.get_string(buffer));
+        var sigbytes = SSHWireFormat.get_bytes(buffer);
         var signature = SSHSignature.PARSER.fromByteBuffer(ByteBuffer.wrap(sigbytes));
         return new SSHSIG(version, identity, namespace, reserved, hash_algorithm, signature);
     }
@@ -118,7 +162,7 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
             bin.ssh_bytes(signer.toBytes());
             bin.ssh_string(namespace);
             bin.ssh_bytes(reserved);
-            bin.ssh_string(hash_algorithm);
+            bin.ssh_string(hash_algorithm.sshhash);
             bin.ssh_bytes(signature.toBytes());
             return bin.bytes();
         } catch (IOException e) {
@@ -126,32 +170,74 @@ public record SSHSIG(int version, SSHIdentity signer, String namespace, byte[] r
         }
     }
 
-    // Constructs the DTBS blob
-    public static byte[] dtbs(String namespace, String hash_algorithm, byte[] hash) {
-        return dtbs(namespace, hash_algorithm, hash, new byte[0]);
+    // The blob this signature must have signed for the given namespace and hash.
+    public byte[] dtbs(String namespace, Hash hash, byte[] digest) throws SignatureException {
+        if (!this.namespace.equals(namespace)) {
+            throw new SignatureException("Signature is for namespace \"%s\", not \"%s\"".formatted(this.namespace, namespace));
+        }
+        if (hash_algorithm != hash) {
+            throw new SignatureException("Signature uses %s, not %s".formatted(hash_algorithm.sshhash, hash.sshhash));
+        }
+        return blob(namespace, hash, digest);
     }
 
-    public static byte[] dtbs(String namespace, String hash_algorithm, byte[] hash, byte[] reserved) {
-        if (!Set.of(SHA256, SHA512).contains(hash_algorithm)) {
-            throw new IllegalArgumentException("Invalid hash: " + hash_algorithm);
-        }
-        if (reserved.length != 0) {
-            log.info("Reserved field is not empty? Has %d bytes.".formatted(reserved.length));
-        }
+    // Reserved is always empty in the signed blob, whatever the parsed signature carries.
+    private static byte[] blob(String namespace, Hash hash, byte[] digest) {
         try (var bin = SSHWireFormat.create()) {
-            bin.write(SSHSIG.MAGIC());
+            bin.write(MAGIC());
             bin.ssh_string(namespace);
-            bin.ssh_bytes(reserved);
-            bin.ssh_string(hash_algorithm);
-            bin.ssh_bytes(hash);
+            bin.ssh_bytes(new byte[0]);
+            bin.ssh_string(hash.sshhash);
+            bin.ssh_bytes(digest);
             return bin.bytes();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    // Returns the signer for the caller to judge. Passing namespace() and hash_algorithm() back in
+    // accepts whatever the signature says, like "ssh-keygen -Y verify" without -n.
+    public SSHIdentity verify(String namespace, Hash hash, byte[] message) throws GeneralSecurityException {
+        return check(dtbs(namespace, hash, hash.digest().digest(message)));
+    }
+
+    public SSHIdentity verify(String namespace, Hash hash, InputStream message) throws IOException, GeneralSecurityException {
+        return check(dtbs(namespace, hash, digest(hash, message)));
+    }
+
+    private SSHIdentity check(byte[] dtbs) throws GeneralSecurityException {
+        if (!signature.verify(dtbs, signer.getKey())) {
+            throw new SignatureException("Signature does not verify with " + signer);
+        }
+        return signer;
+    }
+
+    public static CompletableFuture<SSHSIG> sign(SSHSigner signer, String namespace, Hash hash, byte[] message) {
+        return sign_digest(signer, namespace, hash, hash.digest().digest(message));
+    }
+
+    public static CompletableFuture<SSHSIG> sign(SSHSigner signer, String namespace, Hash hash, InputStream message) throws IOException {
+        return sign_digest(signer, namespace, hash, digest(hash, message));
+    }
+
+    public static CompletableFuture<SSHSIG> sign_digest(SSHSigner signer, String namespace, Hash hash, byte[] digest) {
+        return signer.sign(blob(namespace, hash, digest))
+                .thenApply(sig -> new SSHSIG(VERSION, signer.identity(), namespace, new byte[0], hash, sig));
+    }
+
+    // Digests the rest of the stream, leaving it open. A read of nothing is not the end of the stream.
+    private static byte[] digest(Hash hash, InputStream in) throws IOException {
+        var md = hash.digest();
+        var buf = new byte[64 * 1024];
+        int n;
+        while ((n = in.read(buf)) != -1) {
+            md.update(buf, 0, n);
+        }
+        return md.digest();
+    }
+
     @Override
     public String toString() {
-        return "[SSHSIG \"%s\" (%s) with %s]".formatted(namespace, hash_algorithm, signer);
+        return "[SSHSIG \"%s\" (%s) with %s]".formatted(namespace, hash_algorithm.sshhash, signer);
     }
 }

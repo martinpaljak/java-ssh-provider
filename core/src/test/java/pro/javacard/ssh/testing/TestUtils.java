@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: MIT
 package pro.javacard.ssh.testing;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECGenParameterSpec;
+import java.util.Objects;
 
 public final class TestUtils {
     public static byte[] randomBytes(int len) {
@@ -43,6 +47,15 @@ public final class TestUtils {
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // Test fixtures live in this module; their packages aren't opened to other modules.
+    public static InputStream resource(String name) {
+        return Objects.requireNonNull(TestUtils.class.getResourceAsStream(name), name);
+    }
+
+    public static String resourceString(String name) throws IOException {
+        return new String(resource(name).readAllBytes(), StandardCharsets.UTF_8);
     }
 
     public static void check_remaining(ByteBuffer buffer, int start, int expected) {
