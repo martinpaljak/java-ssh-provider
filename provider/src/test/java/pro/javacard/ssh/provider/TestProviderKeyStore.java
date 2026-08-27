@@ -83,7 +83,7 @@ public class TestProviderKeyStore {
                 var verify = Signature.getInstance("SHA256withECDSA");
                 // XXX: this should not trigger.
                 Assert.assertNotEquals(verify.getProvider().getName(), SSHProvider.NAME, "unexpected provider for native verification");
-                verify.initVerify(((SSHPublicKey) keypair.publicKey()).getJavaKey()); // FIXME: the types in entries need clarification
+                verify.initVerify(((SSHPublicKey) keypair.publicKey()).getJavaKey());
                 verify.update(payload);
                 Assert.assertTrue(verify.verify(result), "Native verification failed");
 
@@ -159,7 +159,8 @@ public class TestProviderKeyStore {
                 var result = s.sign();
 
                 var verify = Signature.getInstance(nativesignaturetype);
-                verify.initVerify(keypair.publicKey());
+                Assert.assertNotEquals(verify.getProvider().getName(), SSHProvider.NAME, "unexpected provider for native verification");
+                verify.initVerify(((SSHPublicKey) keypair.publicKey()).getJavaKey());
                 verify.update(payload);
                 Assert.assertTrue(verify.verify(result), "Native verification failed");
 

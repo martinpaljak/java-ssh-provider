@@ -6,6 +6,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import pro.javacard.ssh.KeyConf;
+import pro.javacard.ssh.SSHPublicKey;
 import pro.javacard.ssh.SSHSignature;
 import pro.javacard.ssh.testing.TestUtils;
 
@@ -131,6 +132,10 @@ public class TestProviderSignature {
     public void testBadAlgorithm3() throws Exception {
         var s = Signature.getInstance("SHA256withECDSA", new SSHProvider());
         Assert.assertThrows(InvalidKeyException.class, () -> s.initSign(makeKeyPair("Ed25519").getPrivate()));
+
+        var sshpub = SSHPublicKey.fromJavaKey(makeKeyPair("secp256r1").getPublic());
+        var e = Assert.expectThrows(InvalidKeyException.class, () -> s.initVerify(sshpub));
+        Assert.assertTrue(e.getMessage().contains("getJavaKey()"), e.getMessage());
     }
 
 

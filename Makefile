@@ -14,7 +14,7 @@ fast: $(SOURCES)
 	./mvnw package -Dmaven.test.skip=true
 
 soft:
-	ssh-agent sh -c 'chmod 600 ./src/test/resources/k/*; ssh-add ./src/test/resources/k/*; ssh-add -l; YAUSA_TEST=true make test'
+	ssh-agent sh -c 'chmod 600 core/src/test/resources/k/*; ssh-add core/src/test/resources/k/*; ssh-add -l; YAUSA_TEST=true make test'
 
 maven:
 	./mvnw clean install

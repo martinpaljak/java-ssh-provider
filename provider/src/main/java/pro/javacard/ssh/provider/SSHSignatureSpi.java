@@ -54,6 +54,10 @@ public final class SSHSignatureSpi extends SignatureSpi {
         Objects.requireNonNull(publicKey, "publicKey must not be null");
         log.fine("SSHSignatureSpi: engineInitVerify with " + publicKey.getClass().getName());
         if (nativeAlgos.contains(algorithm)) {
+            // No other provider reads the SSH encoding, so pointing at one is only useful together with the java key
+            if (publicKey instanceof SSHPublicKey) {
+                throw new InvalidKeyException("Unwrap with getJavaKey() to verify " + algorithm + " with another provider");
+            }
             throw new InvalidKeyException("Use other provider to verify " + algorithm);
         }
         try {
