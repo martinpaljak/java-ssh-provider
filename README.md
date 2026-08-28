@@ -1,9 +1,9 @@
 # SSHProvider.java
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/java-ssh-provider/blob/main/LICENSE)
 &nbsp;[![Latest release](https://img.shields.io/github/release/martinpaljak/java-ssh-provider.svg)](https://github.com/martinpaljak/java-ssh-provider/releases/latest)
-&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=maven&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fmaven%2Fpro%2Fjavacard%2Fssh-provider%2Fmaven-metadata.xml)](https://gist.github.com/martinpaljak/c77d11d671260e24eef6c39123345cae)
+&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=mvn.javacard.pro&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fpublic%2Fpro%2Fjavacard%2Fssh-provider%2Fmaven-metadata.xml)](https://mvn.javacard.pro/)
 &nbsp;[![Build status](https://github.com/martinpaljak/java-ssh-provider/actions/workflows/robot.yml/badge.svg?branch=main)](https://github.com/martinpaljak/java-ssh-provider/actions)
-&nbsp;[![Made in Estonia](https://img.shields.io/badge/Made_in-Estonia-blue)](https://estonia.ee)
+&nbsp;[![Made in Estonia](https://img.shields.io/badge/Made_in-Estonia-0072CE?style=flat&label=Made%20in&labelColor=black)](https://estonia.ee)
 
 
 The missing key management bridge between (Open)SSH and Java worlds. `SSHProvider` (a Java Security Provider) makes SSH **keys**, **certificates** and **signatures** first-class citizens in the Java ecosystem:
@@ -108,7 +108,14 @@ With Maven:
 <repositories>
     <repository>
         <id>javacard-pro</id>
-        <url>https://mvn.javacard.pro/maven/</url>
+        <url>https://mvn.javacard.pro/public/</url>
+    </repository>
+    <repository>
+        <id>javacard-pro-snapshots</id>
+        <url>https://mvn.javacard.pro/public-snapshots/</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
     </repository>
 </repositories>
 
@@ -116,7 +123,7 @@ With Maven:
     <dependency>
         <groupId>pro.javacard</groupId>
         <artifactId>ssh-provider</artifactId>
-        <version>26.06.29</version>
+        <version>26.08.28-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```

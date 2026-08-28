@@ -6,7 +6,7 @@
 
     <groupId>pro.javacard</groupId>
     <artifactId>java-ssh-provider</artifactId>
-    <version>26.06.30-SNAPSHOT</version>
+    <version>26.08.28-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Java SSH Provider</name>
     <url>https://github.com/martinpaljak/java-ssh-provider</url>
@@ -14,7 +14,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <project.build.outputTimestamp>2026-06-29T07:38:41Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-08-28T12:37:33Z</project.build.outputTimestamp>
         <maven.compiler.release>21</maven.compiler.release>
     </properties>
     <organization>
@@ -31,21 +31,17 @@
         <url>https://github.com/martinpaljak/java-ssh-provider</url>
         <developerConnection>scm:git:git@github.com:martinpaljak/java-ssh-provider.git</developerConnection>
     </scm>
-    <repositories>
+    <distributionManagement>
         <repository>
             <id>javacard-pro</id>
-            <url>https://mvn.javacard.pro/maven/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>fail</checksumPolicy>
-            </releases>
+            <url>m2ssh://mvn@mvn.javacard.pro</url>
         </repository>
-        <repository>
+    </distributionManagement>
+    <!-- TODO: point at /public/ once m2ssh is released -->
+    <pluginRepositories>
+        <pluginRepository>
             <id>javacard-pro-snapshots</id>
-            <url>https://mvn.javacard.pro/maven/SNAPSHOTS/</url>
+            <url>https://mvn.javacard.pro/public-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>interval:60</updatePolicy>
@@ -54,8 +50,8 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
-        </repository>
-    </repositories>
+        </pluginRepository>
+    </pluginRepositories>
     <modules>
         <module>core</module>
         <module>provider</module>
@@ -81,6 +77,13 @@
     </dependencyManagement>
     <build>
         <defaultGoal>clean verify</defaultGoal>
+        <extensions>
+            <extension>
+                <groupId>pro.javacard.maven</groupId>
+                <artifactId>m2ssh</artifactId>
+                <version>26.08.28-SNAPSHOT</version>
+            </extension>
+        </extensions>
         <pluginManagement>
             <plugins>
                 <plugin>
