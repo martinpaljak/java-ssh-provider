@@ -1,7 +1,7 @@
 # SSHProvider.java
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/java-ssh-provider/blob/main/LICENSE)
 &nbsp;[![Latest release](https://img.shields.io/github/release/martinpaljak/java-ssh-provider.svg)](https://github.com/martinpaljak/java-ssh-provider/releases/latest)
-&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=mvn.javacard.pro&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fpublic%2Fpro%2Fjavacard%2Fssh-provider%2Fmaven-metadata.xml)](https://mvn.javacard.pro/)
+&nbsp;[![Maven version](https://img.shields.io/maven-metadata/v?label=mvn.javacard.pro&metadataUrl=https%3A%2F%2Fmvn.javacard.pro%2Fpublic-snapshots%2Fpro%2Fjavacard%2Fssh-provider%2Fmaven-metadata.xml)](https://mvn.javacard.pro/)
 &nbsp;[![Build status](https://github.com/martinpaljak/java-ssh-provider/actions/workflows/robot.yml/badge.svg?branch=main)](https://github.com/martinpaljak/java-ssh-provider/actions)
 &nbsp;[![Made in Estonia](https://img.shields.io/badge/Made_in-Estonia-0072CE?style=flat&label=Made%20in&labelColor=black)](https://estonia.ee)
 
