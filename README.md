@@ -113,9 +113,6 @@ With Maven:
     <repository>
         <id>javacard-pro-snapshots</id>
         <url>https://mvn.javacard.pro/public-snapshots/</url>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
     </repository>
 </repositories>
 
