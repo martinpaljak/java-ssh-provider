@@ -120,7 +120,7 @@ With Maven:
     <dependency>
         <groupId>pro.javacard</groupId>
         <artifactId>ssh-provider</artifactId>
-        <version>26.08.28-SNAPSHOT</version>
+        <version>26.09.05-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
